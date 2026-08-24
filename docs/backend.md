@@ -1,0 +1,119 @@
+# Backend: SISFEIRA
+
+## 1. Organização Física (Structure)
+
+O código-fonte do back-end em Node.js está centralizado na pasta `src/`, adotando uma arquitetura modular orientada a domínios (feature-based) para facilitar a manutenção e legibilidade.
+
+```text
+src/
+├── config/              # Configurações globais (Pool do banco, chaves JWT, SMTP)
+├── middlewares/         # Interceptadores globais (Auth, tratamento de erros)
+├── modules/             # Agrupamento lógico por funcionalidade do sistema
+│   ├── auth/            # Roteamento, controle e serviços de autenticação
+│   ├── catalog/         # Gestão de produtos e edições da feira
+│   ├── order/           # Carrinho, emissão de pedidos e comprovantes
+│   ├── notification/    # Disparo e consulta de alertas
+│   └── report/          # Lógica analítica de vendas por produtor
+│       ├── report.routes.js       # Definição das rotas REST
+│       ├── report.controller.js   # Validação de I/O HTTP
+│       ├── report.service.js      # Regras de negócio puras
+│       └── report.repository.js   # Queries SQL nativas
+├── server.js            # Ponto de entrada (Bootstrap do Express e rotas)
+```
+
+---
+
+## 2. Roteamento (Routing)
+
+O Express gerencia o roteamento distribuindo as requisições baseadas no prefixo da URL. O arquivo principal `server.js` importa os arquivos de rotas de cada módulo (ex: `order.routes.js`) e os anexa sob o prefixo `/api`. As rotas não contêm regras de negócio; elas apenas delegam a execução para os respectivos Controladores.
+
+### 2.1 Diagrama de Ciclo de Vida da Requisição
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client as Cliente (HTTP)
+    participant Route as Express Router
+    participant MW as Middleware (Auth/RBAC)
+    participant Ctrl as Controller
+    participant Svc as Service (Negócio)
+    participant Repo as Repository (SQL)
+    participant DB as PostgreSQL
+
+    Client->>Route: POST /api/pedidos
+    Route->>MW: Intercepta para validação de Token
+    
+    alt Token Inválido ou Sem Permissão
+        MW-->>Client: 401 Unauthorized / 403 Forbidden
+    else Token Válido (Papel: CLIENTE)
+        MW->>Ctrl: Repassa payload + user.id
+        Ctrl->>Ctrl: Valida corpo da requisição (JSON)
+        Ctrl->>Svc: Processa regra de fechamento
+        Svc->>Repo: Solicita gravação no banco
+        Repo->>DB: Executa query (INSERT)
+        DB-->>Repo: Retorna dados gerados (ID)
+        Repo-->>Svc: Confirma persistência
+        Svc-->>Ctrl: Retorna Pedido Processado
+        Ctrl-->>Client: 201 Created (JSON Formatado)
+    end
+```
+
+---
+
+## 3. Contrato de API (API Contract)
+
+A comunicação com o front-end obedece a um padrão RESTful estrito, utilizando o formato JSON para troca de dados[cite: 1].
+* **Requisições:** O cabeçalho `Content-Type: application/json` é obrigatório para rotas `POST`, `PUT` e `PATCH`. O token de acesso deve ser enviado no cabeçalho `Authorization: Bearer <token>`.
+* **Respostas de Sucesso:** Padronizadas para retornar diretamente o recurso solicitado em um objeto ou array (ex: `200 OK`, `201 Created`).
+* **Respostas de Erro:** Seguem um contrato fixo e previsível contendo a mensagem para a interface gráfica:
+  ```json
+  {
+    "erro": true,
+    "mensagem": "Descrição clara do motivo da falha",
+    "codigo": "CODIGO_INTERNO_ERRO"
+  }
+  ```
+
+---
+
+## 4. Serviços e Regras de Negócio (Services)
+
+A camada `Service` é o coração da aplicação. É aqui que os Requisitos Funcionais (RFs) e as Regras de Negócio (RNs) do sistema[cite: 1] são transformados em código. A camada de serviço não sabe que está rodando na web (desacoplada de objetos `req` e `res` do Express).
+
+* **Isolamento de Escopo (RN06):** No módulo de relatórios (`report.service.js`), o serviço sempre recebe o `produtor_id` extraído do token pelo middleware, garantindo que o relatório processe exclusivamente as vendas autorizadas[cite: 1].
+* **Orquestração de Transações (RN02, RN03, RN04):** O `order.service.js` orquestra a criação do pedido, a geração do comprovante e o disparo da notificação[cite: 1] em uma única chamada, passando o controle transacional (BEGIN/COMMIT) para o `order.repository.js`.
+
+---
+
+## 5. Acesso a Dados (Data Access)
+
+Em conformidade com a arquitetura definida, o sistema interage com o PostgreSQL através de `Repositories` usando o driver nativo `pg` (node-postgres), descartando ORMs complexos para garantir controle, simplicidade e alto desempenho (RNF01)[cite: 1].
+
+* **Connection Pool:** O gerenciamento de conexões é feito através de uma instância única de `Pool` em `config/db.js`, garantindo resiliência em dias de pico de acessos (RNF06)[cite: 1].
+* **Queries Parametrizadas:** Toda e qualquer consulta SQL é blindada contra Injeção de SQL (RNF02)[cite: 1] utilizando parâmetros posicionais obrigatórios.
+  ```javascript
+  // Padrão de repositório (exemplo abstrato)
+  const query = `SELECT * FROM produtos WHERE produtor_id = $1 AND ativo = $2`;
+  const result = await db.query(query, [produtorId, true]);
+  ```
+
+---
+
+## 6. Middlewares (Interceptadores)
+
+O back-end implementa middlewares essenciais para segurança e formatação (RNF02)[cite: 1]:
+
+* **express.json():** Middleware nativo habilitado no `server.js` para realizar o parser automático do corpo de requisições de string para objetos JavaScript.
+* **CORS (Cross-Origin Resource Sharing):** Embora back-end e front-end sejam servidos pela mesma porta (`3000`), as diretrizes de CORS são configuradas de forma restrita caso a API precise ser acessada de um domínio de teste futuro.
+* **Autenticação (JWT):** Middleware `verifyToken` intercepta rotas protegidas, decodifica o token, injeta os dados do usuário em `req.user` e encerra a requisição em caso de expiração ou fraude.
+* **Autorização (RBAC):** Middleware de fábrica `requireRole(['CLIENTE', 'PRODUTOR'])` garante que as operações exclusivas, como gerenciamento de catálogo, sejam executadas somente por usuários autorizados[cite: 1].
+
+---
+
+## 7. Tratamento de Exceções (Error Handling)
+
+Para evitar vazamentos de informações sensíveis ou falhas silenciosas, o Express centraliza os erros por meio de um middleware global `errorHandler`, localizado no final da fila de rotas do `server.js`.
+
+* **Abordagem Operacional:** Todos os controladores envolvem suas lógicas em blocos `try/catch` (ou utilizam utilitários de catch assíncrono). Quando uma exceção ocorre, ela é passada adiante chamando `next(err)`.
+* **Padronização:** O middleware `errorHandler` mapeia erros conhecidos (como violações de chave única do banco de dados ou erro de validação JWT) e as converte na estrutura JSON definida no Contrato de API, retornando status `400`, `401`, ou `409` conforme o contexto.
+* **Proteção de Dados (RNF02):** Em ambiente de produção, erros genéricos ou falhas críticas do PostgreSQL não expõem detalhes técnicos na API (retornando apenas HTTP `500 Internal Server Error` com uma mensagem amigável)[cite: 1].
