@@ -5,6 +5,7 @@ ai-context-docs.txt
 ai-context-code.txt
 # ==========================
 
+Toolkit.sh
 *.aux
 *.fdb_latexmk
 *.fls
