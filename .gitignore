@@ -10,5 +10,4 @@ ai-context-code.txt
 *.fls
 *.log
 *.gz
-*.tex
 *.toc

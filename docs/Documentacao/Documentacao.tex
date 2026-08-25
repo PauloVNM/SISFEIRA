@@ -1,0 +1,461 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- PACOTES BÁSICOS E TIPOGRAFIA ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{helvet}               % Fonte padrão Arial / Helvetica
+\renewcommand{\familydefault}{\sfdefault}
+
+% --- MARGENS (ABNT: Superior/Esquerda 3cm, Inferior/Direita 2cm) ---
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    top=3cm,
+    left=3cm,
+    bottom=2cm,
+    right=2cm
+}
+
+% --- ESPAÇAMENTOS ---
+\usepackage{setspace}
+\setstretch{1.5}                  % Espaçamento 1,5 entre linhas
+\setlength{\parindent}{1.25cm}    % Recuo padrão de parágrafo
+\setlength{\parskip}{0pt}         % Sem espaçamento extra entre parágrafos
+
+% --- PAGINAÇÃO (ABNT: Superior Direito, tamanho 10pt) ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\rhead{\fontsize{10}{12}\selectfont\thepage}
+
+% --- PACOTES AUXILIARES PARA TABELAS E FORMATAÇÃO ---
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+% Formatação dos Títulos de Seção (Caixa Alta e Negrito)
+\titleformat{\section}
+  {\normalfont\bfseries\normalsize\MakeUppercase}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\bfseries\normalsize}{\thesubsection}{1em}{}
+
+% ==============================================================================
+% DEFINIÇÃO DE VARIÁVEIS DO DOCUMENTO
+% ==============================================================================
+\newcommand{\varInstituicao}{CENTRO DE EDUCAÇÃO TECNOLÓGICA DO AMAZONAS -- CETAM}
+\newcommand{\varCurso}{CURSO TÉCNICO EM DESENVOLVIMENTO DE SISTEMAS}
+\newcommand{\varTitulo}{SISFEIRA: SISTEMA WEB DE GESTÃO DE PEDIDOS PARA FEIRA DE PRODUTORES LOCAIS}
+\newcommand{\varEstudanteUm}{Paulo Monteiro}
+\newcommand{\varEstudanteDois}{Luis Fernamdo}
+\newcommand{\varEstudanteTres}{José Solsa}
+\newcommand{\varMunicipio}{Manaus, AM}
+\newcommand{\varAno}{2026}
+\newcommand{\varProfessor}{Priscila Gonçalves}
+
+% ==============================================================================
+% INÍCIO DO DOCUMENTO
+% ==============================================================================
+\begin{document}
+
+% ------------------------------------------------------------------------------
+% 1. CAPA
+% ------------------------------------------------------------------------------
+\thispagestyle{empty}
+\begin{center}
+    {\bfseries\MakeUppercase{\varInstituicao}}\\[0.2cm]
+    {\bfseries\MakeUppercase{\varCurso}}
+    
+    \vspace*{\fill}
+    
+    {\bfseries\varTitulo}
+    
+    \vspace{1.5cm}
+    
+    {\bfseries\varEstudanteUm}\\[0.1cm]
+    {\bfseries\varEstudanteDois}\\[0.1cm]
+    {\bfseries\varEstudanteTres}
+    
+    \vspace*{\fill}
+    
+    {\bfseries\varMunicipio}\\[0.1cm]
+    {\bfseries\varAno}
+\end{center}
+\newpage
+
+% ------------------------------------------------------------------------------
+% 2. FOLHA DE AVALIAÇÃO FINAL
+% ------------------------------------------------------------------------------
+\thispagestyle{empty}
+\begin{center}
+    {\bfseries\MakeUppercase{\varInstituicao}}\\[0.2cm]
+    {\bfseries\MakeUppercase{\varCurso}}
+    
+    \vspace{1.5cm}
+    
+    {\bfseries Avaliação Final do Projeto Técnico}
+\end{center}
+
+\vspace{0.8cm}
+\noindent A avaliação do Projeto intitulado \textbf{\varTitulo}, desenvolvido pelos estudantes: \textbf{\varEstudanteUm}, \textbf{\varEstudanteDois} e \textbf{\varEstudanteTres}, é composta por duas partes:
+
+\vspace{0.8cm}
+\noindent \textbf{*Parte 1} -- Avaliação do acompanhamento sistemático realizado no decorrer do desenvolvimento do projeto, obtendo a nota: (\hspace{1.5cm})\underline{\hspace{3cm}}
+
+\vspace{0.5cm}
+\noindent \textbf{*Parte 2} -- Entrega do trabalho impresso e socialização da temática com a turma: (\hspace{1.5cm})\underline{\hspace{3cm}}
+
+\vspace{1cm}
+\begin{center}
+    \textbf{Nota final nesta Etapa do Componente (Projeto): (\hspace{1.5cm})\underline{\hspace{3cm}}}
+\end{center}
+
+\vspace{1cm}
+\noindent \textbf{Considerações do Professor/Instrutor:}
+\vspace{0.3cm}
+
+\noindent\rule{\textwidth}{0.4pt}\\[0.6cm]
+\rule{\textwidth}{0.4pt}\\[0.6cm]
+\rule{\textwidth}{0.4pt}\\[0.6cm]
+\rule{\textwidth}{0.4pt}
+
+\vspace{1.5cm}
+\begin{center}
+    \underline{\hspace{9cm}}\\
+    \varProfessor\\
+    Professor/Instrutor do Projeto (Avaliador)
+    
+    \vspace*{\fill}
+    
+    \varMunicipio\\
+    \varAno
+\end{center}
+\newpage
+
+% ------------------------------------------------------------------------------
+% 3. SUMÁRIO
+% ------------------------------------------------------------------------------
+\thispagestyle{empty}
+\begin{center}
+    {\bfseries\MakeUppercase{Sumário}}
+\end{center}
+\vspace{0.5cm}
+\begin{spacing}{1.0}
+\tableofcontents
+\end{spacing}
+\newpage
+
+% Ativa numeração de páginas a partir do elemento textual
+\setcounter{page}{4}
+
+% ------------------------------------------------------------------------------
+% 4. APRESENTAÇÃO
+% ------------------------------------------------------------------------------
+\section{Apresentação}
+
+O projeto SISFEIRA consiste no desenvolvimento de uma aplicação web voltada à gestão de pedidos antecipados, catálogo de produtos e organização de retiradas para feiras livres de produtores locais. A proposta surge da necessidade de aproximar os agricultores familiares e pequenos produtores dos seus consumidores finais por meio de um canal digital acessível, direto e descomplicado.
+
+Ao permitir que os clientes visualizem a oferta semanal e realizem seus pedidos previamente à realização física da feira, o sistema possibilita que os produtores colham e transportem apenas a quantidade demandada, mitigando perdas financeiras e desperdício de alimentos perecíveis. 
+
+A solução técnica prioriza a simplicidade operacional e a eficiência, adotando tecnologias web abertas e de ampla portabilidade (HTML5, CSS3, JavaScript, Node.js e PostgreSQL). Este documento apresenta a caracterização detalhada da proposta, os requisitos funcionais e não funcionais, as etapas de modelagem, prototipação e a metodologia de execução estabelecida para a construção do Produto Mínimo Viável (MVP) em um ciclo de 15 dias.
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 5. CARACTERIZAÇÃO DO PROBLEMA E JUSTIFICATIVA TÉCNICA
+% ------------------------------------------------------------------------------
+\section{Caracterização do Problema e Justificativa Técnica}
+
+As feiras livres representam um dos principais canais de comercialização da agricultura familiar, viabilizando o sustento de centenas de famílias produtoras e garantindo o abastecimento de produtos frescos para a população urbana. No entanto, o modelo operacional tradicional dessas feiras enfrenta gargalos críticos decorrentes da falta de instrumentos digitais de previsão de demanda e divulgação.
+
+Historicamente, os produtores locais transportam suas mercadorias até os pontos de feira com base em estimativas empíricas. Essa ausência de previsibilidade gera dois problemas recorrentes: o desabastecimento precoce de itens com alta procura ou o excedente de produtos perecíveis não comercializados que, diante das limitações logísticas e de refrigeração, acabam descartados como lixo orgânico ao término do dia. Paralelamente, os consumidores enfrentam dificuldades para conhecer previamente a disponibilidade de itens sazonais ou reservar produtos diretamente com os feirantes de sua preferência.
+
+A justificativa técnica do SISFEIRA fundamenta-se no emprego de software livre para viabilizar um canal de pedidos antecipados que otimize a cadeia de valor da feira. A implementação de um sistema web proporciona:
+
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Impacto Econômico:} Redução de prejuízos operacionais dos agricultores familiares, permitindo uma colheita dimensionada exatamente conforme o volume de pedidos garantidos.
+    \item \textbf{Impacto Social e Digital:} Inclusão tecnológica dos feirantes por meio de interfaces objetivas, adaptadas para uso direto em smartphones, sem barreiras complexas de usabilidade.
+    \item \textbf{Impacto Ambiental:} Mitigação direta do desperdício de alimentos e racionalização do frete e transporte das cargas do interior para a feira.
+\end{itemize}
+
+Dessa forma, o projeto se posiciona como uma resposta prática e de baixo custo, estruturada estritamente dentro das competências do Curso Técnico em Desenvolvimento de Sistemas.
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 6. ÁREA DE ABRANGÊNCIA
+% ------------------------------------------------------------------------------
+\section{Área de Abrangência}
+
+A área de abrangência do projeto compreende o ambiente operacional das feiras livres e feiras de produtores locais no contexto do Estado do Amazonas, com foco inicial de aplicação em feiras comunitárias e eventos de produtores sediados no município de Manaus.
+
+O projeto não se restringe a uma feira ou espaço físico exclusivo, sendo concebido com arquitetura genérica para atender a diferentes feiras livres independentes. Os públicos e agentes abrangidos pelo sistema dividem-se em três perfis:
+
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Produtores Locais / Feirantes:} Agricultores e feirantes cadastrados que disponibilizam seus catálogos semanais e realizam a separação das encomendas.
+    \item \textbf{Clientes / Compradores:} Cidadãos que frequentam as feiras e utilizam o sistema para reservar antecipadamente produtos hortifrúti.
+    \item \textbf{Organização da Feira:} Administradores do espaço que acompanham os relatórios consolidados e a distribuição dos pontos de atendimento.
+\end{itemize}
+
+O raio de atuação delimita-se à gestão de informações dentro do ciclo temporal que antecede a feira até o momento de encerramento das atividades do dia de atendimento presencial.
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 7. OBJETIVOS
+% ------------------------------------------------------------------------------
+\section{Objetivos}
+
+\subsection{Objetivo Geral}
+Desenvolver uma aplicação web para a gestão de pedidos antecipados, catálogo de produtores locais e controle de pontos de retirada para feiras livres, estabelecendo um canal digital eficiente entre a agricultura familiar e os consumidores.
+
+\subsection{Objetivos Específicos}
+\begin{itemize}[leftmargin=1.5cm]
+    \item Implementar o módulo de cadastro e gestão de produtores locais e seus respectivos catálogos de produtos;
+    \item Desenvolver a interface pública de visualização de catálogo de produtos organizado por edição/semana de feira;
+    \item Construir o mecanismo de montagem de pedidos on-line por meio de carrinho de compras sem exigência de pagamento eletrônico;
+    \item Disponibilizar o acompanhamento do status do pedido (recebido, em preparação e pronto para retirada) com emissão de comprovante digital;
+    \item Gerar relatórios consolidados de vendas por produtor para suporte à organização da produção.
+\end{itemize}
+
+\subsection{Delimitação do Escopo do MVP}
+Para garantir a viabilidade técnica e a entrega funcional no prazo de 15 dias, os limites do sistema ficam formalmente estabelecidos:
+
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Escopo Contemplado:} Cadastro de usuários (produtores e clientes), vitrine virtual, gestão de carrinho, emissão de comprovante para retirada física, painel de controle do produtor com atualização de status do pedido e relatórios básicos.
+    \item \textbf{Não-Escopo:} O sistema não contempla integração com gateways de pagamento on-line (o pagamento é realizado presencialmente na retirada da banca), nem serviços logísticos de entrega domiciliar (delivery/frete terceirizado), operando estritamente com pontos físicos de coleta na feira.
+\end{itemize}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 8. METAS
+% ------------------------------------------------------------------------------
+\section{Metas}
+
+As metas do projeto representam as entregas parciais e finais quantificadas ao longo do período de 15 dias de execução:
+
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Meta 1 (Dias 1 a 3):} Concluir 100\% do levantamento e detalhamento dos Requisitos Funcionais e Não Funcionais no Documento de Especificação de Requisitos (DER) e estruturar o diagrama do banco de dados relacional.
+    \item \textbf{Meta 2 (Dias 4 a 6):} Elaborar e validar os protótipos navegáveis (wireframes/mockups) das 7 telas centrais da aplicação (Login/Cadastro, Catálogo, Carrinho, Comprovante, Painel do Produtor, Status do Pedido e Relatórios).
+    \item \textbf{Meta 3 (Dias 7 a 11):} Desenvolver 100\% dos módulos de back-end (API REST em Node.js com persistência em PostgreSQL) e as interfaces front-end responsivas em HTML5/CSS3/JavaScript puro.
+    \item \textbf{Meta 4 (Dias 12 a 13):} Executar os testes integrados de ponta a ponta simulando o fluxo completo de cadastro, montagem de pedido, geração de comprovante e alteração de status.
+    \item \textbf{Meta 5 (Dias 14 a 15):} Finalizar a documentação técnica consolidada, gerar a versão final do relatório impresso e estruturar a apresentação oral do projeto.
+\end{itemize}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 9. FASES DE EXECUÇÃO
+% ------------------------------------------------------------------------------
+\section{Fases de Execução}
+
+As fases de desenvolvimento foram distribuídas no horizonte de 15 dias, agrupadas em blocos de 3 dias para acompanhamento das metas:
+
+\begin{table}[h!]
+\centering
+\begin{spacing}{1.15}
+\begin{tabular}{|p{8.5cm}|c|c|c|c|c|}
+\hline
+\textbf{Fases de Execução} & \textbf{D 1-3} & \textbf{D 4-6} & \textbf{D 7-9} & \textbf{D 10-12} & \textbf{D 13-15} \\ \hline
+Fase 1: Levantamento de Requisitos e Modelagem DER & X &  &  &  &  \\ \hline
+Fase 2: Prototipação de Interfaces e Planejamento &  & X &  &  &  \\ \hline
+Fase 3: Implementação do Back-end e Banco de Dados &  &  & X &  &  \\ \hline
+Fase 4: Implementação do Front-end e Integração &  &  &  & X &  \\ \hline
+Fase 5: Testes Integrados, Documentação e Apresentação &  &  &  &  & X \\ \hline
+\end{tabular}
+\end{spacing}
+\end{table}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 10. METODOLOGIA
+% ------------------------------------------------------------------------------
+\section{Metodologia}
+
+O desenvolvimento do SISFEIRA adota uma abordagem iterativa e simplificada voltada à entrega rápida de um MVP funcional. A arquitetura técnica foi desenhada sem dependências complexas ou frameworks pesados, favorecendo o controle, a legibilidade e a facilidade de manutenção.
+
+\subsection{Stack Tecnológica}
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Front-end:} HTML5 semântico, CSS3 com layout responsivo (adaptado para smartphones) e JavaScript puro (Vanilla JS) para manipulação de DOM e consumo da API.
+    \item \textbf{Back-end:} Node.js com o framework Express, estruturado no padrão REST para fornecimento de rotas limpas e desacopladas.
+    \item \textbf{Banco de Dados:} PostgreSQL como sistema gerenciador de banco de dados relacional para persistência de dados de usuários, produtos e pedidos.
+    \item \textbf{Ambiente de Execução:} Ambiente local de desenvolvimento sobre sistema operacional Debian/Linux e editor VS Code.
+\end{itemize}
+
+\subsection{Requisitos Funcionais (RF)}
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{RF01:} Cadastrar produtores e seus respectivos produtos;
+    \item \textbf{RF02:} Cadastrar clientes/compradores;
+    \item \textbf{RF03:} Disponibilizar catálogo de produtos por semana ou edição da feira;
+    \item \textbf{RF04:} Permitir que o cliente monte um pedido por meio de carrinho de compras;
+    \item \textbf{RF05:} Confirmar o pedido e gerar comprovante digital para o cliente;
+    \item \textbf{RF06:} Gerenciar o status do pedido (recebido, em preparação, pronto para retirada);
+    \item \textbf{RF07:} Consultar o histórico de pedidos realizados pelo cliente;
+    \item \textbf{RF08:} Gerar relatório simplificado de vendas por produtor;
+    \item \textbf{RF09:} Notificar o painel do produtor sobre novos pedidos recebidos;
+    \item \textbf{RF10:} Exibir e definir o ponto físico de retirada do pedido na feira.
+\end{itemize}
+
+\subsection{Requisitos Não Funcionais (RNF)}
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{RNF01 (Desempenho):} Carregamento das páginas de catálogo em até 2 segundos em conexões locais;
+    \item \textbf{RNF02 (Segurança):} Armazenamento seguro de credenciais com criptografia unidirecional (hash);
+    \item \textbf{RNF03 (Usabilidade):} Fluxo intuitivo de montagem de pedido concluído em poucos cliques;
+    \item \textbf{RNF04 (Disponibilidade):} Operação contínua durante a janela horária de pedidos;
+    \item \textbf{RNF05 (Portabilidade):} Interface responsiva e funcional em navegadores móveis;
+    \item \textbf{RNF06 (Escalabilidade):} Suporte a múltiplos acessos simultâneos locais sem degradação do banco;
+    \item \textbf{RNF07 (Manutenibilidade):} Separação clara entre regras de rotas, controle de negócios e acesso a dados.
+\end{itemize}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 11. ÓRGÃOS ENVOLVIDOS
+% ------------------------------------------------------------------------------
+\section{Órgãos Envolvidos}
+
+A execução do presente projeto técnico envolve exclusivamente as seguintes entidades e agentes:
+
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Centro de Educação Tecnológica do Amazonas -- CETAM:} Entidade pública estadual de educação profissional, responsável pelo suporte institucional, supervisão técnico-pedagógica e avaliação dos critérios acadêmicos do componente curricular.
+    \item \textbf{Equipe de Estudantes Desenvolvedores:} Formada pelos alunos Paulo Monteiro, Luis Fernamdo e José Solsa, responsáveis pelo levantamento de requisitos, modelagem do banco de dados, desenvolvimento do código-fonte, testes e elaboração da documentação técnica.
+\end{itemize}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 12. MECANISMOS E NORMAS DE EXECUÇÃO
+% ------------------------------------------------------------------------------
+\section{Mecanismos e Normas de Execução}
+
+O projeto rege-se estritamente pelas diretrizes do Regulamento Acadêmico e Pedagógico do CETAM, respeitando as normas de integridade, prazos e padrões de entrega do curso.
+
+\subsection{Privacidade e Proteção de Dados}
+Em alinhamento aos princípios da Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018), o sistema implementa o princípio da coleta mínima: são solicitados apenas os dados estritamente necessários para identificação do cliente e do produtor (nome, telefone para contato e e-mail), não havendo retenção de dados bancários ou documentos sensíveis.
+
+\subsection{Segurança e Simplificações do MVP}
+Para a versão de MVP executada em ambiente de testes local, são adotadas decisões técnicas proporcionais:
+\begin{itemize}[leftmargin=1.5cm]
+    \item As senhas de acesso são tratadas com funções de hash criptográfico no back-end antes da persistência no banco de dados relacional.
+    \item Por se tratar de um protótipo acadêmico executado localmente, assume-se de forma consciente o risco de não empregar certificados SSL/TLS (HTTPS) nem barreiras de mitigação de ataques externos (como WAF ou firewalls dedicados), sendo essas proteções obrigatórias apenas para uma futura implantação em ambiente público de produção.
+\end{itemize}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 13. ORÇAMENTO
+% ------------------------------------------------------------------------------
+\section{Orçamento}
+
+Considerando a utilização exclusiva de ferramentas abertas, software livre e infraestrutura computacional já existente executada localmente, os custos diretos do projeto limitam-se a despesas simbólicas de material de consumo para a apresentação acadêmica:
+
+\begin{table}[h!]
+\centering
+\begin{spacing}{1.15}
+\begin{tabular}{|c|p{7.5cm}|c|c|c|c|}
+\hline
+\textbf{Nº} & \textbf{Descrição} & \textbf{Unid.} & \textbf{Qtd.} & \textbf{V. Unit. (R\$)} & \textbf{Total (R\$)} \\ \hline
+\multicolumn{6}{|l|}{\textbf{Material de Expediente e Impressão}} \\ \hline
+1 & Impressão da Documentação Técnica Final & Folha & 30 & 0,50 & 15,00 \\ \hline
+2 & Encadernação em Espiral com Capa Plástica & Unid. & 1 & 10,00 & 10,00 \\ \hline
+3 & Papel Sulfite A4 para Rascunhos e Validação & Pacote & 1 & 10,00 & 10,00 \\ \hline
+\multicolumn{5}{|r|}{\textbf{Subtotal Material:}} & 35,00 \\ \hline
+\multicolumn{6}{|l|}{\textbf{Infraestrutura e Licenças de Software}} \\ \hline
+1 & Licenças de Software (Node.js, PostgreSQL, VS Code) & -- & -- & 0,00 & 0,00 \\ \hline
+2 & Ambiente de Hospedagem (Servidor Local) & -- & -- & 0,00 & 0,00 \\ \hline
+\multicolumn{5}{|r|}{\textbf{Subtotal Software:}} & 0,00 \\ \hline
+\multicolumn{5}{|r|}{\textbf{Valor Total do Projeto (R\$):}} & \textbf{35,00} \\ \hline
+\end{tabular}
+\end{spacing}
+\end{table}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 14. CRONOGRAMA
+% ------------------------------------------------------------------------------
+\section{Cronograma}
+
+O cronograma detalha a distribuição das atividades ao longo dos 15 dias de projeto:
+
+\begin{table}[h!]
+\centering
+\begin{spacing}{1.15}
+\begin{tabular}{|p{7.5cm}|c|c|c|c|c|}
+\hline
+\textbf{Atividades Previstas} & \textbf{D 1-3} & \textbf{D 4-6} & \textbf{D 7-9} & \textbf{D 10-12} & \textbf{D 13-15} \\ \hline
+Levantamento de Requisitos e Elaboração do DER & X &  &  &  &  \\ \hline
+Modelagem Entidade-Relacionamento do Banco & X &  &  &  &  \\ \hline
+Criação dos Protótipos de Interface (Wireframes) &  & X &  &  &  \\ \hline
+Configuração do Ambiente e Estruturação do Banco &  & X &  &  &  \\ \hline
+Desenvolvimento das Rotas e API (Node.js/Express) &  &  & X &  &  \\ \hline
+Desenvolvimento do Front-end (HTML5/CSS3/JS) &  &  &  & X &  \\ \hline
+Integração Front-end / Back-end e Validação &  &  &  & X &  \\ \hline
+Bateria de Testes Funcionais do MVP &  &  &  &  & X \\ \hline
+Consolidação do Relatório Técnico e Apresentação &  &  &  &  & X \\ \hline
+\end{tabular}
+\end{spacing}
+\end{table}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 15. REFERÊNCIAS
+% ------------------------------------------------------------------------------
+\section{Referências}
+
+\noindent ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. \textbf{NBR 6023}: Informação e documentação -- Referências -- Elaboração. Rio de Janeiro: ABNT, 2018.
+
+\vspace{0.5cm}
+\noindent BRASIL. \textbf{Lei nº 13.709, de 14 de agosto de 2018}. Lei Geral de Proteção de Dados Pessoais (LGPD). Brasília, DF: Presidência da República, 2018.
+
+\vspace{0.5cm}
+\noindent CENTRO DE EDUCAÇÃO TECNOLÓGICA DO AMAZONAS (CETAM). \textbf{Orientações Metodológicas para Elaboração de Projetos Técnicos}. Manaus: CETAM, 2026.
+
+\vspace{0.5cm}
+\noindent ELMASRI, Ramez; NAVATHE, Shamkant B. \textbf{Sistemas de Banco de Dados}. 7. ed. São Paulo: Pearson, 2018.
+
+\vspace{0.5cm}
+\noindent PRESSMAN, Roger S.; MAXIM, Bruce R. \textbf{Engenharia de Software}: uma abordagem profissional. 8. ed. Porto Alegre: AMGH, 2016.
+
+\vspace{0.5cm}
+\noindent POSTGRESQL GLOBAL DEVELOPMENT GROUP. \textbf{PostgreSQL 15 Documentation}. 2023. Disponível em: \textless https://www.postgresql.org/docs/ \textgreater. Acesso em: 15 fev. 2026.
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 16. APÊNDICE
+% ------------------------------------------------------------------------------
+\section*{Apêndice}
+\addcontentsline{toc}{section}{Apêndice}
+
+\noindent \textbf{Apêndice A -- Relação de Telas Mapeadas para Prototipação}
+
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Tela 01:} Autenticação e Cadastro (Produtor e Cliente);
+    \item \textbf{Tela 02:} Catálogo Público de Produtos da Edição da Feira;
+    \item \textbf{Tela 03:} Carrinho de Compras e Seleção de Quantidades;
+    \item \textbf{Tela 04:} Confirmação de Pedido e Emissão de Comprovante de Retirada;
+    \item \textbf{Tela 05:} Painel Administrativo do Produtor (Gestão de Itens);
+    \item \textbf{Tela 06:} Painel de Controle de Status dos Pedidos Recebidos;
+    \item \textbf{Tela 07:} Relatório Consolidado de Vendas por Período.
+\end{itemize}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 17. ANEXO
+% ------------------------------------------------------------------------------
+\section*{Anexo}
+\addcontentsline{toc}{section}{Anexo}
+
+\noindent \textbf{Anexo A -- Termo de Referência do Sistema Web (Extrato Pedagógico)}
+
+\vspace{0.5cm}
+\noindent Documento de especificação curricular e diretrizes pedagógicas fornecido pela Coordenação do Curso Técnico em Desenvolvimento de Sistemas do CETAM para balizamento do projeto prático.
+
+\end{document}
