@@ -41,6 +41,8 @@
   {\normalfont\bfseries\normalsize\MakeUppercase}{\thesection}{1em}{}
 \titleformat{\subsection}
   {\normalfont\bfseries\normalsize}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\bfseries\normalsize}{\thesubsubsection}{1em}{}
 
 % ==============================================================================
 % DEFINIÇÃO DE VARIÁVEIS DO DOCUMENTO
@@ -86,14 +88,12 @@
 \newpage
 
 % ------------------------------------------------------------------------------
-% 2. FOLHA DE AVALIAÇÃO FINAL
+% FOLHA DE AVALIAÇÃO FINAL
 % ------------------------------------------------------------------------------
 \thispagestyle{empty}
 \begin{center}
     {\bfseries\MakeUppercase{\varInstituicao}}\\[0.2cm]
     {\bfseries\MakeUppercase{\varCurso}}
-    
-    \vspace{1.5cm}
     
     {\bfseries Avaliação Final do Projeto Técnico}
 \end{center}
@@ -135,7 +135,7 @@
 \newpage
 
 % ------------------------------------------------------------------------------
-% 3. SUMÁRIO
+% SUMÁRIO
 % ------------------------------------------------------------------------------
 \thispagestyle{empty}
 \begin{center}
@@ -151,52 +151,52 @@
 \setcounter{page}{4}
 
 % ------------------------------------------------------------------------------
-% 4. APRESENTAÇÃO
+% 1. APRESENTAÇÃO
 % ------------------------------------------------------------------------------
 \section{Apresentação}
 
 O projeto SISFEIRA consiste no desenvolvimento de uma aplicação web voltada à gestão de pedidos antecipados, catálogo de produtos e organização de retiradas para feiras livres de produtores locais. A proposta surge da necessidade de aproximar os agricultores familiares e pequenos produtores dos seus consumidores finais por meio de um canal digital acessível, direto e descomplicado.
 
-Ao permitir que os clientes visualizem a oferta semanal e realizem seus pedidos previamente à realização física da feira, o sistema possibilita que os produtores colham e transportem apenas a quantidade demandada, mitigando perdas financeiras e desperdício de alimentos perecíveis. 
+Ao permitir que os clientes visualizem a oferta semanal e realizem seus pedidos previamente à realização física da feira, o sistema possibilita que os produtores colham e transportem apenas a quantidade demandada, mitigando perdas financeiras e desperdício de alimentos perecíveis.
 
-A solução técnica prioriza a simplicidade operacional e a eficiência, adotando tecnologias web abertas e de ampla portabilidade (HTML5, CSS3, JavaScript, Node.js e PostgreSQL). Este documento apresenta a caracterização detalhada da proposta, os requisitos funcionais e não funcionais, as etapas de modelagem, prototipação e a metodologia de execução estabelecida para a construção do Produto Mínimo Viável (MVP) em um ciclo de 15 dias.
+A solução técnica prioriza a simplicidade operacional, o controle do código e a eficiência de execução, adotando tecnologias web abertas e de ampla portabilidade (HTML5, CSS3, JavaScript puro, Node.js, Express e PostgreSQL). O sistema é arquitetado em modelo monolítico modular com entrega estática \textit{Zero-Build} executada diretamente sobre o sistema operacional Debian Linux. Este documento apresenta a caracterização detalhada da proposta, a especificação formal de requisitos, as regras de negócio, a modelagem conceitual e de dados, bem como a metodologia e o cronograma de execução estabelecidos para a entrega do Produto Mínimo Viável (MVP) em um ciclo de 15 dias.
 
 \newpage
 
 % ------------------------------------------------------------------------------
-% 5. CARACTERIZAÇÃO DO PROBLEMA E JUSTIFICATIVA TÉCNICA
+% 2. CARACTERIZAÇÃO DO PROBLEMA E JUSTIFICATIVA TÉCNICA
 % ------------------------------------------------------------------------------
 \section{Caracterização do Problema e Justificativa Técnica}
 
-As feiras livres representam um dos principais canais de comercialização da agricultura familiar, viabilizando o sustento de centenas de famílias produtoras e garantindo o abastecimento de produtos frescos para a população urbana. No entanto, o modelo operacional tradicional dessas feiras enfrenta gargalos críticos decorrentes da falta de instrumentos digitais de previsão de demanda e divulgação.
+As feiras livres representam um dos principais pilares de comercialização da agricultura familiar no Estado do Amazonas, viabilizando o sustento de centenas de famílias produtoras e garantindo o abastecimento de produtos frescos para os centros urbanos. No entanto, o modelo operacional tradicional dessas feiras enfrenta gargalos críticos decorrentes da inexistência de instrumentos digitais acessíveis para previsão de demanda e divulgação direta da colheita.
 
-Historicamente, os produtores locais transportam suas mercadorias até os pontos de feira com base em estimativas empíricas. Essa ausência de previsibilidade gera dois problemas recorrentes: o desabastecimento precoce de itens com alta procura ou o excedente de produtos perecíveis não comercializados que, diante das limitações logísticas e de refrigeração, acabam descartados como lixo orgânico ao término do dia. Paralelamente, os consumidores enfrentam dificuldades para conhecer previamente a disponibilidade de itens sazonais ou reservar produtos diretamente com os feirantes de sua preferência.
+Historicamente, os produtores locais transportam suas mercadorias até as bancas com base em estimativas empíricas. Essa ausência de previsibilidade gera dois problemas recorrentes: o desabastecimento precoce de itens com alta procura ou o excedente de produtos perecíveis não comercializados que, diante das limitações logísticas e de refrigeração regional, acabam descartados como lixo orgânico ao término da jornada. Paralelamente, os consumidores enfrentam dificuldades para conhecer com antecedência a disponibilidade de itens sazonais ou reservar mercadorias diretamente com os feirantes de sua preferência.
 
-A justificativa técnica do SISFEIRA fundamenta-se no emprego de software livre para viabilizar um canal de pedidos antecipados que otimize a cadeia de valor da feira. A implementação de um sistema web proporciona:
+A justificativa técnica do SISFEIRA fundamenta-se no emprego pragmático de software livre para viabilizar um canal de pedidos antecipados que otimize a cadeia de valor da feira:
 
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Impacto Econômico:} Redução de prejuízos operacionais dos agricultores familiares, permitindo uma colheita dimensionada exatamente conforme o volume de pedidos garantidos.
-    \item \textbf{Impacto Social e Digital:} Inclusão tecnológica dos feirantes por meio de interfaces objetivas, adaptadas para uso direto em smartphones, sem barreiras complexas de usabilidade.
-    \item \textbf{Impacto Ambiental:} Mitigação direta do desperdício de alimentos e racionalização do frete e transporte das cargas do interior para a feira.
+    \item \textbf{Impacto Econômico:} Redução de prejuízos operacionais dos agricultores familiares, permitindo uma colheita dimensionada estritamente conforme o volume de pedidos confirmados.
+    \item \textbf{Impacto Social e Digital:} Inclusão tecnológica dos feirantes por meio de interfaces leves e responsivas, adaptadas para uso em smartphones (\textit{Mobile-First}), sem a barreira de instalação de aplicativos complexos.
+    \item \textbf{Impacto Ambiental:} Mitigação direta do desperdício de alimentos perecíveis e racionalização do frete e transporte das cargas das comunidades rurais para a área urbana.
 \end{itemize}
 
-Dessa forma, o projeto se posiciona como uma resposta prática e de baixo custo, estruturada estritamente dentro das competências do Curso Técnico em Desenvolvimento de Sistemas.
+Dessa forma, o projeto se posiciona como uma resposta prática, econômica e funcional, estruturada estritamente dentro das competências do Curso Técnico em Desenvolvimento de Sistemas.
 
 \newpage
 
 % ------------------------------------------------------------------------------
-% 6. ÁREA DE ABRANGÊNCIA
+% 3. ÁREA DE ABRANGÊNCIA
 % ------------------------------------------------------------------------------
 \section{Área de Abrangência}
 
 A área de abrangência do projeto compreende o ambiente operacional das feiras livres e feiras de produtores locais no contexto do Estado do Amazonas, com foco inicial de aplicação em feiras comunitárias e eventos de produtores sediados no município de Manaus.
 
-O projeto não se restringe a uma feira ou espaço físico exclusivo, sendo concebido com arquitetura genérica para atender a diferentes feiras livres independentes. Os públicos e agentes abrangidos pelo sistema dividem-se em três perfis:
+O projeto não se restringe a um único espaço físico fixo, sendo concebido com arquitetura genérica para atender a diferentes feiras livres independentes. Os públicos e atores atendidos pelo sistema dividem-se em três perfis:
 
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Produtores Locais / Feirantes:} Agricultores e feirantes cadastrados que disponibilizam seus catálogos semanais e realizam a separação das encomendas.
-    \item \textbf{Clientes / Compradores:} Cidadãos que frequentam as feiras e utilizam o sistema para reservar antecipadamente produtos hortifrúti.
-    \item \textbf{Organização da Feira:} Administradores do espaço que acompanham os relatórios consolidados e a distribuição dos pontos de atendimento.
+    \item \textbf{Produtores Locais / Feirantes:} Agricultores e feirantes cadastrados que disponibilizam seus catálogos semanais, recebem alertas de compras e realizam a separação das encomendas.
+    \item \textbf{Clientes / Compradores:} Cidadãos que frequentam as feiras e utilizam o sistema para reservar antecipadamente produtos hortifrúti e artesanais.
+    \item \textbf{Organização da Feira:} Administradores do espaço responsáveis por coordenar os pontos de entrega/retirada, ativar as edições da feira e acompanhar a logística geral.
 \end{itemize}
 
 O raio de atuação delimita-se à gestão de informações dentro do ciclo temporal que antecede a feira até o momento de encerramento das atividades do dia de atendimento presencial.
@@ -204,9 +204,9 @@ O raio de atuação delimita-se à gestão de informações dentro do ciclo temp
 \newpage
 
 % ------------------------------------------------------------------------------
-% 7. OBJETIVOS
+% 4. OBJETIVOS E ESCOPO DO PROJETO
 % ------------------------------------------------------------------------------
-\section{Objetivos}
+\section{Objetivos e Escopo do Projeto}
 
 \subsection{Objetivo Geral}
 Desenvolver uma aplicação web para a gestão de pedidos antecipados, catálogo de produtores locais e controle de pontos de retirada para feiras livres, estabelecendo um canal digital eficiente entre a agricultura familiar e os consumidores.
@@ -214,48 +214,429 @@ Desenvolver uma aplicação web para a gestão de pedidos antecipados, catálogo
 \subsection{Objetivos Específicos}
 \begin{itemize}[leftmargin=1.5cm]
     \item Implementar o módulo de cadastro e gestão de produtores locais e seus respectivos catálogos de produtos;
-    \item Desenvolver a interface pública de visualização de catálogo de produtos organizado por edição/semana de feira;
-    \item Construir o mecanismo de montagem de pedidos on-line por meio de carrinho de compras sem exigência de pagamento eletrônico;
-    \item Disponibilizar o acompanhamento do status do pedido (recebido, em preparação e pronto para retirada) com emissão de comprovante digital;
-    \item Gerar relatórios consolidados de vendas por produtor para suporte à organização da produção.
+    \item Desenvolver a vitrine pública de visualização de catálogo de produtos organizado por edição ou semana ativa da feira;
+    \item Construir o mecanismo de montagem de pedidos on-line por meio de carrinho de compras sem intermediação de pagamentos eletrônicos;
+    \item Disponibilizar o acompanhamento do status do pedido (\texttt{RECEBIDO}, \texttt{EM\_PREPARACAO} e \texttt{ENTREGUE}) com emissão de comprovante digital com código único;
+    \item Gerar relatórios analíticos consolidados de vendas por produtor com isolamento estrito de dados.
 \end{itemize}
 
 \subsection{Delimitação do Escopo do MVP}
 Para garantir a viabilidade técnica e a entrega funcional no prazo de 15 dias, os limites do sistema ficam formalmente estabelecidos:
 
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Escopo Contemplado:} Cadastro de usuários (produtores e clientes), vitrine virtual, gestão de carrinho, emissão de comprovante para retirada física, painel de controle do produtor com atualização de status do pedido e relatórios básicos.
-    \item \textbf{Não-Escopo:} O sistema não contempla integração com gateways de pagamento on-line (o pagamento é realizado presencialmente na retirada da banca), nem serviços logísticos de entrega domiciliar (delivery/frete terceirizado), operando estritamente com pontos físicos de coleta na feira.
+    \item \textbf{Escopo Contemplado:} Cadastro de usuários (produtores, clientes e organização), catálogo semanal, carrinho de compras com persistência local, emissão de comprovante para retirada física, painel de controle do produtor com atualização de status, sistema interno de notificações e relatórios analíticos de vendas por feirante.
+    \item \textbf{Não-Escopo:} O sistema não contempla integração com gateways de pagamento on-line via cartão ou PIX automático (o pagamento é realizado presencialmente na retirada da banca), nem rastreamento por GPS ou serviços de entrega terceirizada (delivery), operando estritamente com pontos físicos de coleta na feira.
 \end{itemize}
 
 \newpage
 
 % ------------------------------------------------------------------------------
-% 8. METAS
+% 5. ESPECIFICAÇÃO DE REQUISITOS E REGRAS DE NEGÓCIO
 % ------------------------------------------------------------------------------
-\section{Metas}
+\section{Especificação de Requisitos e Regras de Negócio}
 
-As metas do projeto representam as entregas parciais e finais quantificadas ao longo do período de 15 dias de execução:
+\subsection{Requisitos Funcionais (RF)}
+
+Os Requisitos Funcionais descrevem os comportamentos, fluxos operacionais e serviços que o sistema SISFEIRA disponibiliza aos seus usuários:
+
+\vspace{0.3cm}
+\noindent
+\begin{spacing}{1.15}
+\begin{tabularx}{\textwidth}{|c|p{4.2cm}|X|}
+\hline
+\textbf{Código} & \textbf{Identificador} & \textbf{Descrição do Requisito} \\ \hline
+\textbf{RF01} & Cadastro de Produtores e Produtos & Permitir o cadastro de produtores e o gerenciamento autônomo dos produtos que compõem seu catálogo agrícola. \\ \hline
+\textbf{RF02} & Cadastro de Clientes & Permitir o registro e a autenticação de clientes/compradores para realização de pedidos. \\ \hline
+\textbf{RF03} & Catálogo Semanal da Feira & Disponibilizar a visualização pública dos produtos cadastrados para a edição ou semana ativa da feira. \\ \hline
+\textbf{RF04} & Carrinho de Compras & Permitir que o cliente selecione múltiplos itens, defina quantidades e estruture seu pedido antes da confirmação. \\ \hline
+\textbf{RF05} & Confirmação e Comprovante & Confirmar a solicitação de compra, gravando o pedido e gerando comprovante digital com código único para retirada. \\ \hline
+\textbf{RF06} & Gestão do Status do Pedido & Permitir ao produtor acompanhar e atualizar o estado do pedido (recebido, em preparação e entregue). \\ \hline
+\textbf{RF07} & Histórico de Pedidos & Disponibilizar ao cliente a consulta de compras anteriores e acompanhamento das solicitações em andamento. \\ \hline
+\textbf{RF08} & Relatório de Vendas & Gerar relatórios analíticos consolidados de vendas e faturamento exclusivos para cada produtor. \\ \hline
+\textbf{RF09} & Notificação de Novos Pedidos & Emitir alertas no painel do produtor e envio de notificações quando novos pedidos forem registrados. \\ \hline
+\textbf{RF10} & Definição do Ponto de Retirada & Exibir e exigir a seleção do local físico de coleta do pedido previamente cadastrado para a feira. \\ \hline
+\end{tabularx}
+\end{spacing}
+
+\newpage
+
+\subsection{Requisitos Não Funcionais (RNF)}
+
+Os Requisitos Não Funcionais estabelecem os critérios de qualidade técnica, restrições operacionais, segurança e usabilidade da aplicação:
+
+\vspace{0.3cm}
+\noindent
+\begin{spacing}{1.15}
+\begin{tabularx}{\textwidth}{|c|p{3.5cm}|X|}
+\hline
+\textbf{Código} & \textbf{Categoria} & \textbf{Descrição do Requisito} \\ \hline
+\textbf{RNF01} & Desempenho & Garantir carregamento das páginas de catálogo em tempo inferior a 2 segundos em conexões padrão. \\ \hline
+\textbf{RNF02} & Segurança & Proteger credenciais com hash criptográfico (\textit{bcrypt}) e blindar consultas SQL com parâmetros posicionais (\$1, \$2). \\ \hline
+\textbf{RNF03} & Usabilidade & Fornecer fluxo de compra simplificado e intuitivo, realizável em poucos cliques e sem complexidade de navegação. \\ \hline
+\textbf{RNF04} & Disponibilidade & Assegurar estabilidade e disponibilidade do servidor durante as janelas de funcionamento e picos da feira. \\ \hline
+\textbf{RNF05} & Portabilidade & Estruturar layout responsivo otimizado para navegadores de smartphones (\textit{Mobile-First}). \\ \hline
+\textbf{RNF06} & Escalabilidade & Suportar acessos concorrentes sem exaustão de conexões via \textit{Connection Pooling} no banco PostgreSQL. \\ \hline
+\textbf{RNF07} & Manutenibilidade & Adotar arquitetura modular desacoplada em padrão REST, separando rotas, controladores, serviços e repositórios. \\ \hline
+\textbf{RNF08} & Integridade Transacional & Garantir consistência estrita (ACID) na persistência de pedidos e reserva de itens por meio de transações atômicas. \\ \hline
+\end{tabularx}
+\end{spacing}
+
+\newpage
+
+\subsection{Regras de Negócio (RN)}
+
+As Regras de Negócio definem as restrições e políticas de funcionamento que governam os processos da aplicação:
+
+\vspace{0.3cm}
+\noindent
+\begin{spacing}{1.15}
+\begin{tabularx}{\textwidth}{|c|p{3.8cm}|X|}
+\hline
+\textbf{Código} & \textbf{Identificador} & \textbf{Enunciado da Regra de Negócio} \\ \hline
+\textbf{RN01} & Temporalidade do Catálogo & A disponibilização de produtos aos clientes é estritamente delimitada pela semana ou edição ativa da feira. \\ \hline
+\textbf{RN02} & Ciclo de Vida dos Pedidos & O status do pedido evolui obrigatoriamente de forma sequencial e controlada: \texttt{RECEBIDO} $\rightarrow$ \texttt{EM\_PREPARACAO} $\rightarrow$ \texttt{ENTREGUE}. \\ \hline
+\textbf{RN03} & Emissão de Comprovante & A confirmação do pedido pelo cliente gera obrigatoriamente um código identificador único para conferência na entrega. \\ \hline
+\textbf{RN04} & Alerta Imediato ao Feirante & O registro de uma nova compra dispara automaticamente uma notificação persistida para cada produtor com itens no pedido. \\ \hline
+\textbf{RN05} & Ponto de Atendimento & Nenhum pedido pode ser concluído sem a seleção prévia e obrigatória de um ponto físico de retirada homologado. \\ \hline
+\textbf{RN06} & Isolamento de Produtores & O relatório analítico de vendas e faturamento deve consolidar exclusivamente as vendas pertencentes ao produtor logado. \\ \hline
+\textbf{RN07} & Autonomia Administrativa & O cadastro e a precificação de produtos devem ser realizados diretamente pelo próprio feirante em sua interface gráfica. \\ \hline
+\end{tabularx}
+\end{spacing}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 6. MODELAGEM CONCEITUAL E DE DADOS
+% ------------------------------------------------------------------------------
+\section{Modelagem Conceitual e de Dados}
+
+A modelagem do sistema traduz os requisitos de negócio em artefatos formais de engenharia de software, orientando o fluxo de dados e a persistência relacional.
+
+\subsection{Diagrama de Casos de Uso}
+
+O Diagrama de Casos de Uso explicita as fronteiras da aplicação, mapeando como os perfis de usuários (\textit{Cliente}, \textit{Produtor Local}, \textit{Organização da Feira} e o \textit{Serviço de Notificações}) interagem com as funcionalidades da plataforma.
+
+\vspace{0.4cm}
+\begin{center}
+    \fbox{\parbox{0.9\textwidth}{\centering \vspace{2.5cm} \textbf{Figura 1 -- Diagrama de Casos de Uso do SISFEIRA} \\[0.2cm] \textit{(Inserir imagem gerada: diagrama\_casos\_de\_uso.png)} \vspace{2.5cm}}}
+\end{center}
+\vspace{0.4cm}
+
+\subsection{Diagrama de Classes de Domínio}
+
+O Diagrama de Classes representa as entidades fundamentais da lógica de negócio, seus atributos tipados e a multiplicidade das associações que estruturam a aplicação.
+
+\vspace{0.4cm}
+\begin{center}
+    \fbox{\parbox{0.9\textwidth}{\centering \vspace{2.5cm} \textbf{Figura 2 -- Diagrama de Classes de Domínio} \\[0.2cm] \textit{(Inserir imagem gerada: diagrama\_classes.png)} \vspace{2.5cm}}}
+\end{center}
+\vspace{0.4cm}
+
+\newpage
+
+\subsection{Diagrama de Atividades (Ciclo de Vida do Pedido)}
+
+O Diagrama de Atividades ilustra a esteira completa percorrida pelo pedido, desde a navegação na vitrine virtual pelo cliente até a finalização presencial na banca do feirante.
+
+\vspace{0.4cm}
+\begin{center}
+    \fbox{\parbox{0.9\textwidth}{\centering \vspace{2.5cm} \textbf{Figura 3 -- Diagrama de Atividades e Ciclo de Vida do Pedido} \\[0.2cm] \textit{(Inserir imagem gerada: diagrama\_atividades.png)} \vspace{2.5cm}}}
+\end{center}
+\vspace{0.4cm}
+
+\subsection{Dicionário de Dados (DD)}
+
+O Dicionário de Dados formaliza o esquema físico implementado no PostgreSQL, especificando os tipos nativos, volumes estimados, rotinas de retenção e restrições de integridade.
+
+\vspace{0.3cm}
+
+% --- TABELA 1: USUÁRIOS ---
+\begin{spacing}{1.0}
+\small
+\noindent
+\begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+\hline
+\multicolumn{2}{|l|}{\textbf{ENTIDADE: Usuário}} \\ \hline
+\textbf{Descrição:} & Cadastro de clientes, produtores e organizadores da feira. \\ \hline
+\textbf{Nome da Tabela:} & \texttt{usuarios} \\ \hline
+\textbf{Volume Esperado:} & $\approx$ 100 a 500 registros ativos na fase piloto. \\ \hline
+\textbf{Tempo de Retenção:} & Permanente enquanto a conta mantiver-se ativa. \\ \hline
+\textbf{Rotina de Limpeza:} & Inativação lógica conforme solicitação do titular (LGPD). \\ \hline
+\end{tabularx}
+
+\vspace{0.25cm}
+\noindent
+\begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+\hline
+\multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{usuarios}}} \\ \hline
+\textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador único gerado por \texttt{gen\_random\_uuid()}. \\ \hline
+Nome & \texttt{nome} & VARCHAR & 150 & NOT NULL & Nome civil completo ou razão social do produtor. \\ \hline
+E-mail & \texttt{email} & VARCHAR & 150 & NOT NULL, UK & Login único utilizado para autenticação e emissão do JWT. \\ \hline
+Hash Senha & \texttt{senha\_hash} & VARCHAR & 255 & NOT NULL & Hash seguro de autenticação gerado via bcrypt (RNF02). \\ \hline
+Telefone & \texttt{telefone} & VARCHAR & 20 & NULL / CHECK & Contato com DDD; obrigatório para perfil PRODUTOR. \\ \hline
+Perfil & \texttt{perfil} & VARCHAR & 20 & NOT NULL, CHECK & Papel de acesso: 'CLIENTE', 'PRODUTOR' ou 'ORGANIZACAO'. \\ \hline
+Criação & \texttt{criado\_em} & TIMESTAMP & -- & DEFAULT NOW() & Data e hora de criação do registro no banco. \\ \hline
+\end{tabularx}
+\end{spacing}
+
+\newpage
+
+% --- TABELA 2: PRODUTOS ---
+\begin{spacing}{1.0}
+\small
+\noindent
+\begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+\hline
+\multicolumn{2}{|l|}{\textbf{ENTIDADE: Produto}} \\ \hline
+\textbf{Descrição:} & Catálogo de itens hortifrúti e artesanais comercializados. \\ \hline
+\textbf{Nome da Tabela:} & \texttt{produtos} \\ \hline
+\textbf{Volume Esperado:} & $\approx$ 200 a 1.000 itens por edição de feira. \\ \hline
+\textbf{Tempo de Retenção:} & Permanente para preservação do histórico de vendas. \\ \hline
+\textbf{Rotina de Limpeza:} & Desativação lógica (\textit{Soft Delete}, \texttt{ativo = FALSE}). \\ \hline
+\end{tabularx}
+
+\vspace{0.25cm}
+\noindent
+\begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+\hline
+\multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{produtos}}} \\ \hline
+\textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal único do produto. \\ \hline
+Produtor & \texttt{produtor\_id} & UUID & 36 & FK, NOT NULL & Vínculo com \texttt{usuarios(id)} dono do item. \\ \hline
+Nome & \texttt{nome} & VARCHAR & 100 & NOT NULL & Denominação comercial do item agrícola ou manufaturado. \\ \hline
+Descrição & \texttt{descricao} & TEXT & -- & NULL & Detalhes sobre cultivo, apresentação e características. \\ \hline
+Preço & \texttt{preco} & DECIMAL & 10,2 & NOT NULL, CHECK & Valor unitário oficial de venda ($\ge 0$). \\ \hline
+Unidade & \texttt{unidade\_medida} & VARCHAR & 20 & NOT NULL & Unidade padrão de comercialização (ex: 'kg', 'maço'). \\ \hline
+Ativo & \texttt{ativo} & BOOLEAN & 1 & DEFAULT TRUE & Flag que controla a visibilidade pública no catálogo. \\ \hline
+\end{tabularx}
+\end{spacing}
+
+\vspace{0.6cm}
+
+% --- TABELAS 3 E 4: EDIÇÕES E PONTOS DE RETIRADA ---
+\begin{spacing}{1.0}
+\small
+\noindent
+\begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+\hline
+\multicolumn{2}{|l|}{\textbf{ENTIDADE: Edição da Feira}} \\ \hline
+\textbf{Descrição:} & Ciclos temporais de realização das feiras presenciais. \\ \hline
+\textbf{Nome da Tabela:} & \texttt{edicoes\_feira} \\ \hline
+\textbf{Volume Esperado:} & $\approx$ 50 registros anuais. \\ \hline
+\textbf{Tempo de Retenção:} & 5 anos para histórico e auditoria. \\ \hline
+\textbf{Rotina de Limpeza:} & Arquivamento anual de edições encerradas. \\ \hline
+\end{tabularx}
+
+\vspace{0.25cm}
+\noindent
+\begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+\hline
+\multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{edicoes\_feira}}} \\ \hline
+\textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal da edição. \\ \hline
+Nome Edição & \texttt{nome\_identificador} & VARCHAR & 100 & NOT NULL & Rótulo descritivo do evento (ex: 'Semana 42 - 2026'). \\ \hline
+Ativa & \texttt{ativa} & BOOLEAN & 1 & DEFAULT FALSE & Flag que define se a feira está aberta para pedidos (RN01). \\ \hline
+\end{tabularx}
+
+\vspace{0.6cm}
+
+\noindent
+\begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+\hline
+\multicolumn{2}{|l|}{\textbf{ENTIDADE: Ponto de Retirada}} \\ \hline
+\textbf{Descrição:} & Locais físicos para recolhimento presencial das encomendas. \\ \hline
+\textbf{Nome da Tabela:} & \texttt{pontos\_retirada} \\ \hline
+\textbf{Volume Esperado:} & $\approx$ 5 a 20 pontos de logística cadastrados. \\ \hline
+\textbf{Tempo de Retenção:} & Permanente. \\ \hline
+\textbf{Rotina de Limpeza:} & Manutenção manual conforme layout da feira. \\ \hline
+\end{tabularx}
+
+\vspace{0.25cm}
+\noindent
+\begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+\hline
+\multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{pontos\_retirada}}} \\ \hline
+\textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do local de logística. \\ \hline
+Nome & \texttt{nome} & VARCHAR & 150 & NOT NULL & Nome do ponto físico (ex: 'Tenda Principal'). \\ \hline
+Endereço & \texttt{endereco} & TEXT & -- & NOT NULL & Logradouro completo com referências de retirada. \\ \hline
+\end{tabularx}
+\end{spacing}
+
+\newpage
+
+% --- TABELA 5: PEDIDOS ---
+\begin{spacing}{1.0}
+\small
+\noindent
+\begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+\hline
+\multicolumn{2}{|l|}{\textbf{ENTIDADE: Pedido}} \\ \hline
+\textbf{Descrição:} & Intenções de compra confirmadas pelos clientes na feira. \\ \hline
+\textbf{Nome da Tabela:} & \texttt{pedidos} \\ \hline
+\textbf{Volume Esperado:} & $\approx$ 500 a 5.000 pedidos por mês. \\ \hline
+\textbf{Tempo de Retenção:} & 2 anos para histórico e conciliação de faturamento. \\ \hline
+\textbf{Rotina de Limpeza:} & Consolidação periódica em base histórica analítica. \\ \hline
+\end{tabularx}
+
+\vspace{0.25cm}
+\noindent
+\begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+\hline
+\multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{pedidos}}} \\ \hline
+\textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do pedido. \\ \hline
+Cliente & \texttt{cliente\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o comprador em \texttt{usuarios(id)}. \\ \hline
+Edição & \texttt{edicao\_id} & UUID & 36 & FK, NOT NULL & Vínculo com a feira em \texttt{edicoes\_feira(id)}. \\ \hline
+Ponto Retirada & \texttt{ponto\_retirada\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o ponto em \texttt{pontos\_retirada(id)}. \\ \hline
+Comprovante & \texttt{comprovante\_codigo} & VARCHAR & 20 & NOT NULL, UK & Código gerado para retirada física (RN03). \\ \hline
+Status & \texttt{status} & VARCHAR & 30 & NOT NULL, CHECK & 'RECEBIDO', 'EM\_PREPARACAO' ou 'ENTREGUE' (RN02). \\ \hline
+Valor Total & \texttt{valor\_total} & DECIMAL & 10,2 & NOT NULL & Montante financeiro total calculado no back-end. \\ \hline
+Criação & \texttt{criado\_em} & TIMESTAMP & -- & DEFAULT NOW() & Data e hora do fechamento da solicitação. \\ \hline
+\end{tabularx}
+\end{spacing}
+
+\vspace{0.6cm}
+
+% --- TABELAS 6 E 7: ITENS DO PEDIDO E NOTIFICAÇÕES ---
+\begin{spacing}{1.0}
+\small
+\noindent
+\begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+\hline
+\multicolumn{2}{|l|}{\textbf{ENTIDADE: Item do Pedido}} \\ \hline
+\textbf{Descrição:} & Detalhamento dos produtos e valores congelados na compra. \\ \hline
+\textbf{Nome da Tabela:} & \texttt{itens\_pedido} \\ \hline
+\textbf{Volume Esperado:} & $\approx$ 2.000 a 20.000 itens processados mensalmente. \\ \hline
+\textbf{Tempo de Retenção:} & 2 anos, rigorosamente vinculado ao pedido pai. \\ \hline
+\textbf{Rotina de Limpeza:} & Exclusão em cascata (\textit{ON DELETE CASCADE}). \\ \hline
+\end{tabularx}
+
+\vspace{0.25cm}
+\noindent
+\begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+\hline
+\multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{itens\_pedido}}} \\ \hline
+\textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do item do pedido. \\ \hline
+Pedido & \texttt{pedido\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o pedido pai em \texttt{pedidos(id)}. \\ \hline
+Produto & \texttt{produto\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o catálogo em \texttt{produtos(id)}. \\ \hline
+Quantidade & \texttt{quantidade} & INTEGER & 4 & NOT NULL, CHECK & Volume demandado pelo comprador ($> 0$). \\ \hline
+Preço Unitário & \texttt{preco\_unitario} & DECIMAL & 10,2 & NOT NULL & Preço unitário imutável congelado na transação. \\ \hline
+\end{tabularx}
+
+\vspace{0.6cm}
+
+\noindent
+\begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+\hline
+\multicolumn{2}{|l|}{\textbf{ENTIDADE: Notificação}} \\ \hline
+\textbf{Descrição:} & Alertas internos aos produtores sobre novas encomendas. \\ \hline
+\textbf{Nome da Tabela:} & \texttt{notificacoes} \\ \hline
+\textbf{Volume Esperado:} & $\approx$ 1.000 a 5.000 alertas gerados por mês. \\ \hline
+\textbf{Tempo de Retenção:} & 6 meses a partir da data de leitura. \\ \hline
+\textbf{Rotina de Limpeza:} & Expulgo de notificações lidas com mais de 90 dias. \\ \hline
+\end{tabularx}
+
+\vspace{0.25cm}
+\noindent
+\begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+\hline
+\multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{notificacoes}}} \\ \hline
+\textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do alerta. \\ \hline
+Produtor & \texttt{produtor\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o feirante em \texttt{usuarios(id)} (RN04). \\ \hline
+Pedido & \texttt{pedido\_id} & UUID & 36 & FK, NOT NULL & Vínculo com a encomenda em \texttt{pedidos(id)}. \\ \hline
+Mensagem & \texttt{mensagem} & TEXT & -- & NOT NULL & Descrição resumida dos itens encomendados. \\ \hline
+Lida & \texttt{lida} & BOOLEAN & 1 & DEFAULT FALSE & Flag de controle de pendências no painel. \\ \hline
+\end{tabularx}
+\end{spacing}
+
+\newpage
+
+\subsection{Índices de Otimização e Integridade Transacional}
+
+Para assegurar o carregamento rápido do catálogo (RNF01) e acelerar as consultas agregadas de faturamento por produtor (RF08), foram implementados quatro índices explícitos na base relacional:
 
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Meta 1 (Dias 1 a 3):} Concluir 100\% do levantamento e detalhamento dos Requisitos Funcionais e Não Funcionais no Documento de Especificação de Requisitos (DER) e estruturar o diagrama do banco de dados relacional.
-    \item \textbf{Meta 2 (Dias 4 a 6):} Elaborar e validar os protótipos navegáveis (wireframes/mockups) das 7 telas centrais da aplicação (Login/Cadastro, Catálogo, Carrinho, Comprovante, Painel do Produtor, Status do Pedido e Relatórios).
-    \item \textbf{Meta 3 (Dias 7 a 11):} Desenvolver 100\% dos módulos de back-end (API REST em Node.js com persistência em PostgreSQL) e as interfaces front-end responsivas em HTML5/CSS3/JavaScript puro.
-    \item \textbf{Meta 4 (Dias 12 a 13):} Executar os testes integrados de ponta a ponta simulando o fluxo completo de cadastro, montagem de pedido, geração de comprovante e alteração de status.
-    \item \textbf{Meta 5 (Dias 14 a 15):} Finalizar a documentação técnica consolidada, gerar a versão final do relatório impresso e estruturar a apresentação oral do projeto.
+    \item \texttt{CREATE INDEX idx\_produtos\_produtor ON produtos(produtor\_id);}: Acelera a recuperação e gestão de catálogo no painel do feirante.
+    \item \texttt{CREATE INDEX idx\_pedidos\_cliente ON pedidos(cliente\_id, criado\_em DESC);}: Otimiza a exibição do histórico cronológico de compras do consumidor.
+    \item \texttt{CREATE INDEX idx\_notificacoes\_nao\_lidas ON notificacoes(produtor\_id) WHERE lida = FALSE;}: Índice parcial que agiliza o contador de alertas pendentes do painel.
+    \item \texttt{CREATE INDEX idx\_itens\_pedido\_agrupamento ON itens\_pedido(produto\_id);}: Garante alta performance nas junções SQL durante o cálculo dos relatórios de vendas (RN06).
+\end{itemize}
+
+Além da indexação, a integridade do sistema em momentos de concorrência é garantida pelo encapsulamento do fechamento de pedidos em transações atômicas nativas (\texttt{BEGIN}, \texttt{COMMIT} e \texttt{ROLLBACK}) operando com clientes dedicados do \textit{Connection Pool}, assegurando a persistência simultânea e consistente do cabeçalho do pedido, itens associados e notificações geradas.
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 7. METODOLOGIA E ATIVIDADES PRÁTICAS
+% ------------------------------------------------------------------------------
+\section{Metodologia e Atividades Práticas}
+
+O desenvolvimento do projeto SISFEIRA apoiou-se em um ecossistema integrado de ferramentas modernas, leves e de código aberto, cobrindo o planejamento de tarefas, prototipação visual, modelagem declarativa, controle de versão e persistência de dados.
+
+\subsection{Trello (Gestão Ágil e Quadro Kanban)}
+O Trello foi empregado como ferramenta de gestão visual baseada no método Kanban, organizando as demandas da equipe ao longo do ciclo de 15 dias:
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Mapeamento de Backlog:} Registro estruturado das funcionalidades centrais (FEAT-01 a FEAT-07);
+    \item \textbf{Fluxo de Trabalho:} Segmentação em colunas (\textit{A Fazer}, \textit{Em Andamento}, \textit{Revisão/Testes} e \textit{Concluído}), garantindo previsibilidade diária;
+    \item \textbf{Controle de Prazos:} Alinhamento rigoroso com os marcos intermediários estabelecidos pelo cronograma pedagógico.
+\end{itemize}
+
+\subsection{Figma (Prototipação de Interfaces e UI/UX)}
+Plataforma vetorial utilizada para a concepção e validação dos protótipos de interface antes da escrita de código front-end:
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Design Mobile-First:} Telas concebidas prioritariamente para visualização em smartphones de produtores e clientes;
+    \item \textbf{Simulação de Fluxos:} Validação da esteira de navegação (catálogo, carrinho, checkout e emissão de comprovante);
+    \item \textbf{Guia de Identidade Visual:} Padronização da paleta de cores (verde floresta e amarelo terroso) e tipografia institucional.
+\end{itemize}
+
+\subsection{Mermaid.js (Modelagem Conceitual e Diagramas como Código)}
+Biblioteca baseada em JavaScript utilizada para geração automatizada de diagramas UML a partir de texto puro (\textit{Diagrams as Code}):
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Diagramação Ágil:} Geração e manutenção de Casos de Uso, Classes de Domínio, Atividades e Modelo Entidade-Relacionamento;
+    \item \textbf{Versionamento com o Código:} Integração dos diagramas diretamente ao repositório Git, evitando dependências de arquivos binários proprietários.
+\end{itemize}
+
+\subsection{Git e GitHub (Controle de Versão Distribuído)}
+O Git foi utilizado localmente no terminal Linux para rastreabilidade de código, aliado ao GitHub para repositório remoto:
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Commits Semânticos:} Registro atômico e explicativo de cada evolução do código-fonte;
+    \item \textbf{Ramificação por Funcionalidade:} Trabalho isolado através de \textit{feature branches} (ex: \texttt{feature/FEAT-01-auth-users});
+    \item \textbf{Segurança Operacional:} Capacidade de reversão ágil (\textit{rollback}) para pontos estáveis em caso de regressões.
+\end{itemize}
+
+\subsection{PostgreSQL e Utilitário psql (Banco de Dados Relacional)}
+SGBD relacional corporativo executado nativamente em ambiente Debian Linux na porta padrão 5432:
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Automação via Linha de Comando (\texttt{psql}):} Aplicação sequencial de migrações SQL (\textit{migrations}) e dados iniciais de homologação (\textit{seeds});
+    \item \textbf{Conformidade ACID:} Garantia de consistência transacional e integridade referencial sem dependência de ORMs pesados.
 \end{itemize}
 
 \newpage
 
 % ------------------------------------------------------------------------------
-% 9. FASES DE EXECUÇÃO
+% 8. FASES DE EXECUÇÃO, METAS E CRONOGRAMA
 % ------------------------------------------------------------------------------
-\section{Fases de Execução}
+\section{Fases de Execução, Metas e Cronograma}
 
-As fases de desenvolvimento foram distribuídas no horizonte de 15 dias, agrupadas em blocos de 3 dias para acompanhamento das metas:
+\subsection{Metas do Projeto}
+As metas representam as entregas intermediárias consolidadas no ciclo de 15 dias:
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Meta 1 (Dias 1 a 3):} Conclusão do levantamento e detalhamento dos Requisitos (RF e RNF) e do esquema relacional de dados.
+    \item \textbf{Meta 2 (Dias 4 a 6):} Elaboração e validação dos protótipos navegáveis das 7 telas centrais da aplicação no Figma.
+    \item \textbf{Meta 3 (Dias 7 a 11):} Implementação dos módulos de back-end (API REST Node.js/Express com PostgreSQL) e interfaces em Vanilla JS.
+    \item \textbf{Meta 4 (Dias 12 a 13):} Execução dos testes integrados simulando a jornada completa de compra, emissão de comprovante e relatórios.
+    \item \textbf{Meta 5 (Dias 14 a 15):} Finalização do relatório técnico impresso e estruturação dos slides para apresentação oral.
+\end{itemize}
 
-\begin{table}[h!]
-\centering
+\subsection{Fases de Execução}
+A distribuição temporal do projeto ocorreu em 5 blocos sequenciais de 3 dias:
+
+\vspace{0.3cm}
+\noindent
 \begin{spacing}{1.15}
 \begin{tabular}{|p{8.5cm}|c|c|c|c|c|}
 \hline
@@ -267,120 +648,9 @@ Fase 4: Implementação do Front-end e Integração &  &  &  & X &  \\ \hline
 Fase 5: Testes Integrados, Documentação e Apresentação &  &  &  &  & X \\ \hline
 \end{tabular}
 \end{spacing}
-\end{table}
 
-\newpage
-
-% ------------------------------------------------------------------------------
-% 10. METODOLOGIA
-% ------------------------------------------------------------------------------
-\section{Metodologia}
-
-O desenvolvimento do SISFEIRA adota uma abordagem iterativa e simplificada voltada à entrega rápida de um MVP funcional. A arquitetura técnica foi desenhada sem dependências complexas ou frameworks pesados, favorecendo o controle, a legibilidade e a facilidade de manutenção.
-
-\subsection{Stack Tecnológica}
-\begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Front-end:} HTML5 semântico, CSS3 com layout responsivo (adaptado para smartphones) e JavaScript puro (Vanilla JS) para manipulação de DOM e consumo da API.
-    \item \textbf{Back-end:} Node.js com o framework Express, estruturado no padrão REST para fornecimento de rotas limpas e desacopladas.
-    \item \textbf{Banco de Dados:} PostgreSQL como sistema gerenciador de banco de dados relacional para persistência de dados de usuários, produtos e pedidos.
-    \item \textbf{Ambiente de Execução:} Ambiente local de desenvolvimento sobre sistema operacional Debian/Linux e editor VS Code.
-\end{itemize}
-
-\subsection{Requisitos Funcionais (RF)}
-\begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{RF01:} Cadastrar produtores e seus respectivos produtos;
-    \item \textbf{RF02:} Cadastrar clientes/compradores;
-    \item \textbf{RF03:} Disponibilizar catálogo de produtos por semana ou edição da feira;
-    \item \textbf{RF04:} Permitir que o cliente monte um pedido por meio de carrinho de compras;
-    \item \textbf{RF05:} Confirmar o pedido e gerar comprovante digital para o cliente;
-    \item \textbf{RF06:} Gerenciar o status do pedido (recebido, em preparação, pronto para retirada);
-    \item \textbf{RF07:} Consultar o histórico de pedidos realizados pelo cliente;
-    \item \textbf{RF08:} Gerar relatório simplificado de vendas por produtor;
-    \item \textbf{RF09:} Notificar o painel do produtor sobre novos pedidos recebidos;
-    \item \textbf{RF10:} Exibir e definir o ponto físico de retirada do pedido na feira.
-\end{itemize}
-
-\subsection{Requisitos Não Funcionais (RNF)}
-\begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{RNF01 (Desempenho):} Carregamento das páginas de catálogo em até 2 segundos em conexões locais;
-    \item \textbf{RNF02 (Segurança):} Armazenamento seguro de credenciais com criptografia unidirecional (hash);
-    \item \textbf{RNF03 (Usabilidade):} Fluxo intuitivo de montagem de pedido concluído em poucos cliques;
-    \item \textbf{RNF04 (Disponibilidade):} Operação contínua durante a janela horária de pedidos;
-    \item \textbf{RNF05 (Portabilidade):} Interface responsiva e funcional em navegadores móveis;
-    \item \textbf{RNF06 (Escalabilidade):} Suporte a múltiplos acessos simultâneos locais sem degradação do banco;
-    \item \textbf{RNF07 (Manutenibilidade):} Separação clara entre regras de rotas, controle de negócios e acesso a dados.
-\end{itemize}
-
-\newpage
-
-% ------------------------------------------------------------------------------
-% 11. ÓRGÃOS ENVOLVIDOS
-% ------------------------------------------------------------------------------
-\section{Órgãos Envolvidos}
-
-A execução do presente projeto técnico envolve exclusivamente as seguintes entidades e agentes:
-
-\begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Centro de Educação Tecnológica do Amazonas -- CETAM:} Entidade pública estadual de educação profissional, responsável pelo suporte institucional, supervisão técnico-pedagógica e avaliação dos critérios acadêmicos do componente curricular.
-    \item \textbf{Equipe de Estudantes Desenvolvedores:} Formada pelos alunos Paulo Monteiro, Luis Fernamdo e José Solsa, responsáveis pelo levantamento de requisitos, modelagem do banco de dados, desenvolvimento do código-fonte, testes e elaboração da documentação técnica.
-\end{itemize}
-
-\newpage
-
-% ------------------------------------------------------------------------------
-% 12. MECANISMOS E NORMAS DE EXECUÇÃO
-% ------------------------------------------------------------------------------
-\section{Mecanismos e Normas de Execução}
-
-O projeto rege-se estritamente pelas diretrizes do Regulamento Acadêmico e Pedagógico do CETAM, respeitando as normas de integridade, prazos e padrões de entrega do curso.
-
-\subsection{Privacidade e Proteção de Dados}
-Em alinhamento aos princípios da Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018), o sistema implementa o princípio da coleta mínima: são solicitados apenas os dados estritamente necessários para identificação do cliente e do produtor (nome, telefone para contato e e-mail), não havendo retenção de dados bancários ou documentos sensíveis.
-
-\subsection{Segurança e Simplificações do MVP}
-Para a versão de MVP executada em ambiente de testes local, são adotadas decisões técnicas proporcionais:
-\begin{itemize}[leftmargin=1.5cm]
-    \item As senhas de acesso são tratadas com funções de hash criptográfico no back-end antes da persistência no banco de dados relacional.
-    \item Por se tratar de um protótipo acadêmico executado localmente, assume-se de forma consciente o risco de não empregar certificados SSL/TLS (HTTPS) nem barreiras de mitigação de ataques externos (como WAF ou firewalls dedicados), sendo essas proteções obrigatórias apenas para uma futura implantação em ambiente público de produção.
-\end{itemize}
-
-\newpage
-
-% ------------------------------------------------------------------------------
-% 13. ORÇAMENTO
-% ------------------------------------------------------------------------------
-\section{Orçamento}
-
-Considerando a utilização exclusiva de ferramentas abertas, software livre e infraestrutura computacional já existente executada localmente, os custos diretos do projeto limitam-se a despesas simbólicas de material de consumo para a apresentação acadêmica:
-
-\begin{table}[h!]
-\centering
-\begin{spacing}{1.15}
-\begin{tabular}{|c|p{7.5cm}|c|c|c|c|}
-\hline
-\textbf{Nº} & \textbf{Descrição} & \textbf{Unid.} & \textbf{Qtd.} & \textbf{V. Unit. (R\$)} & \textbf{Total (R\$)} \\ \hline
-\multicolumn{6}{|l|}{\textbf{Material de Expediente e Impressão}} \\ \hline
-1 & Impressão da Documentação Técnica Final & Folha & 30 & 0,50 & 15,00 \\ \hline
-2 & Encadernação em Espiral com Capa Plástica & Unid. & 1 & 10,00 & 10,00 \\ \hline
-3 & Papel Sulfite A4 para Rascunhos e Validação & Pacote & 1 & 10,00 & 10,00 \\ \hline
-\multicolumn{5}{|r|}{\textbf{Subtotal Material:}} & 35,00 \\ \hline
-\multicolumn{6}{|l|}{\textbf{Infraestrutura e Licenças de Software}} \\ \hline
-1 & Licenças de Software (Node.js, PostgreSQL, VS Code) & -- & -- & 0,00 & 0,00 \\ \hline
-2 & Ambiente de Hospedagem (Servidor Local) & -- & -- & 0,00 & 0,00 \\ \hline
-\multicolumn{5}{|r|}{\textbf{Subtotal Software:}} & 0,00 \\ \hline
-\multicolumn{5}{|r|}{\textbf{Valor Total do Projeto (R\$):}} & \textbf{35,00} \\ \hline
-\end{tabular}
-\end{spacing}
-\end{table}
-
-\newpage
-
-% ------------------------------------------------------------------------------
-% 14. CRONOGRAMA
-% ------------------------------------------------------------------------------
-\section{Cronograma}
-
-O cronograma detalha a distribuição das atividades ao longo dos 15 dias de projeto:
+\subsection{Cronograma de Atividades}
+O cronograma operacional detalha as atividades desenvolvidas ao longo das duas semanas de trabalho:
 
 \begin{table}[h!]
 \centering
@@ -404,7 +674,66 @@ Consolidação do Relatório Técnico e Apresentação &  &  &  &  & X \\ \hline
 \newpage
 
 % ------------------------------------------------------------------------------
-% 15. REFERÊNCIAS
+% 9. ÓRGÃOS ENVOLVIDOS, MECANISMOS E NORMAS DE EXECUÇÃO
+% ------------------------------------------------------------------------------
+\section{Órgãos Envolvidos, Mecanismos e Normas de Execução}
+
+\subsection{Órgãos Envolvidos}
+A execução do presente projeto técnico envolveu as seguintes entidades:
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Centro de Educação Tecnológica do Amazonas -- CETAM:} Entidade pública estadual responsável pelo suporte institucional, supervisão técnico-pedagógica e homologação avaliativa do componente curricular.
+    \item \textbf{Equipe de Estudantes Desenvolvedores:} Formada por \varEstudanteUm, \varEstudanteDois\ e \varEstudanteTres, responsáveis pelo ciclo completo de engenharia (requisitos, modelagem, codificação, testes e documentação).
+\end{itemize}
+
+\subsection{Privacidade e Proteção de Dados (LGPD)}
+Em conformidade com a Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018), o sistema adota o princípio da coleta mínima (\textit{data minimization}):
+\begin{itemize}[leftmargin=1.5cm]
+    \item Coletam-se apenas os dados indispensáveis para o fluxo operacional: nome, e-mail para autenticação e telefone para contato via WhatsApp;
+    \item Não há captura nem armazenamento de documentos de identificação pessoal (CPF, RG) ou registros de cartões de crédito;
+    \item A desativação de cadastros de produtos opera via \textit{Soft Delete} preservando a integridade histórica dos pedidos sem expor dados desnecessários.
+\end{itemize}
+
+\subsection{Segurança, Simplificações do MVP e Análise de Riscos}
+Para viabilizar a entrega de um protótipo ágil, simples e funcional em ambiente de desenvolvimento local (Debian Linux), foram adotadas concessões e proteções técnicas específicas:
+\begin{itemize}[leftmargin=1.5cm]
+    \item \textbf{Proteções Efetivas Implementadas:} Hashes seguros de senhas gerados com \textit{bcrypt}, prevenção contra injeção de SQL via consultas parametrizadas (\$1, \$2) no driver \texttt{pg}, sanitização nativa de templates no front-end (\texttt{escapeHTML}) para neutralizar ataques de XSS e isolamento de escopo por produtor (RBAC) validado estritamente no back-end.
+    \item \textbf{Armazenamento de JWT em \texttt{localStorage} (Risco Aceito):} Facilita o controle de sessão no front-end sem ferramentas de compilação. Em caso de vulnerabilidade XSS no navegador, o token poderia ser lido por scripts maliciosos. Para um ambiente de produção real com dados financeiros, recomenda-se a migração obrigatória para cookies protegidos com as flags \texttt{HttpOnly}, \texttt{Secure} e \texttt{SameSite}.
+    \item \textbf{Execução em Host Único Bare-Metal (Risco Aceito):} A API Node.js e o PostgreSQL executam no mesmo host Debian comunicando-se via loopback local (\texttt{127.0.0.1}). Essa decisão elimina a sobrecarga de orquestradores de contêineres, sendo adequada para a avaliação acadêmica, embora em ambiente de produção comercial demande segmentação de rede e certificados TLS/HTTPS.
+\end{itemize}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 10. ORÇAMENTO
+% ------------------------------------------------------------------------------
+\section{Orçamento}
+
+Pela utilização exclusiva de tecnologias abertas, software livre e execução em infraestrutura computacional pré-existente dos próprios estudantes, os custos diretos limitaram-se a despesas simbólicas de material de consumo para apresentação:
+
+\begin{table}[h!]
+\centering
+\begin{spacing}{1.15}
+\begin{tabular}{|c|p{7.5cm}|c|c|c|c|}
+\hline
+\textbf{Nº} & \textbf{Descrição} & \textbf{Unid.} & \textbf{Qtd.} & \textbf{V. Unit. (R\$)} & \textbf{Total (R\$)} \\ \hline
+\multicolumn{6}{|l|}{\textbf{Material de Expediente e Impressão}} \\ \hline
+1 & Impressão da Documentação Técnica Final & Folha & 30 & 0,50 & 15,00 \\ \hline
+2 & Encadernação em Espiral com Capa Plástica & Unid. & 1 & 10,00 & 10,00 \\ \hline
+3 & Papel Sulfite A4 para Rascunhos e Validação & Pacote & 1 & 10,00 & 10,00 \\ \hline
+\multicolumn{5}{|r|}{\textbf{Subtotal Material:}} & 35,00 \\ \hline
+\multicolumn{6}{|l|}{\textbf{Infraestrutura e Licenças de Software}} \\ \hline
+1 & Licenças de Software (Node.js, PostgreSQL, VS Code) & -- & -- & 0,00 & 0,00 \\ \hline
+2 & Ambiente de Hospedagem (Host Único Debian Linux) & -- & -- & 0,00 & 0,00 \\ \hline
+\multicolumn{5}{|r|}{\textbf{Subtotal Software:}} & 0,00 \\ \hline
+\multicolumn{5}{|r|}{\textbf{Valor Total do Projeto (R\$):}} & \textbf{35,00} \\ \hline
+\end{tabular}
+\end{spacing}
+\end{table}
+
+\newpage
+
+% ------------------------------------------------------------------------------
+% 11. REFERÊNCIAS
 % ------------------------------------------------------------------------------
 \section{Referências}
 
@@ -428,7 +757,7 @@ Consolidação do Relatório Técnico e Apresentação &  &  &  &  & X \\ \hline
 \newpage
 
 % ------------------------------------------------------------------------------
-% 16. APÊNDICE
+% APÊNDICE
 % ------------------------------------------------------------------------------
 \section*{Apêndice}
 \addcontentsline{toc}{section}{Apêndice}
@@ -440,15 +769,15 @@ Consolidação do Relatório Técnico e Apresentação &  &  &  &  & X \\ \hline
     \item \textbf{Tela 02:} Catálogo Público de Produtos da Edição da Feira;
     \item \textbf{Tela 03:} Carrinho de Compras e Seleção de Quantidades;
     \item \textbf{Tela 04:} Confirmação de Pedido e Emissão de Comprovante de Retirada;
-    \item \textbf{Tela 05:} Painel Administrativo do Produtor (Gestão de Itens);
+    \item \textbf{Tela 05:} Painel Administrativo do Produtor (Gestão de Itens e Preços);
     \item \textbf{Tela 06:} Painel de Controle de Status dos Pedidos Recebidos;
-    \item \textbf{Tela 07:} Relatório Consolidado de Vendas por Período.
+    \item \textbf{Tela 07:} Relatório Analítico Consolidado de Vendas por Feirante.
 \end{itemize}
 
 \newpage
 
 % ------------------------------------------------------------------------------
-% 17. ANEXO
+% ANEXO
 % ------------------------------------------------------------------------------
 \section*{Anexo}
 \addcontentsline{toc}{section}{Anexo}
