@@ -11,3 +11,4 @@ ai-context-code.txt
 *.log
 *.gz
 *.toc
+.vscode
