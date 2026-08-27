@@ -31,6 +31,7 @@
 \rhead{\fontsize{10}{12}\selectfont\thepage}
 
 % --- PACOTES AUXILIARES PARA TABELAS, CAIXAS E TÍTULOS ---
+\usepackage{graphicx}
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{titlesec}
@@ -496,17 +497,16 @@ As metas do projeto representam as entregas parciais e finais quantificadas ao l
 \end{tabularx}
 \end{spacing}
 
-\vspace{0.6cm}
 \subsection{Modelagem (Banco de Dados)}
 
 \noindent \textbf{Entidades e Atributos:} Definição formal das entidades do sistema, atributos tipados e cardinalidade dos relacionamentos que compõem o banco de dados relacional[cite: 2, 4, 10, 12].
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 \noindent \textbf{Modelo Conceitual:} Diagrama de alto nível representando entidades, atributos e associações[cite: 12].
 
 \vspace{0.3cm}
 \begin{center}
-    \fbox{\parbox{0.9\textwidth}{\centering \vspace{2cm} \textbf{Modelo Conceitual de Dados} \\[0.2cm] \textit{(Espaço reservado para inclusão do diagrama conceitual / brModelo)} \vspace{2cm}}}
+    \includegraphics[width=0.95\textwidth]{"ModeloConceitua DeDados.png"}
 \end{center}
 
 \vspace{0.4cm}
@@ -514,7 +514,7 @@ As metas do projeto representam as entregas parciais e finais quantificadas ao l
 
 \vspace{0.3cm}
 \begin{center}
-    \fbox{\parbox{0.9\textwidth}{\centering \vspace{2cm} \textbf{Modelo Lógico de Dados} \\[0.2cm] \textit{(Espaço reservado para inclusão do esquema lógico em tabelas / brModelo)} \vspace{2cm}}}
+    \includegraphics[width=0.95\textwidth]{ModeloLogicoDeDados.png}
 \end{center}
 
 \vspace{0.4cm}
@@ -537,15 +537,18 @@ Representação formal dos atores mapeados (Cliente, Produtor Local, Organizaç�
 
 \vspace{0.4cm}
 \begin{center}
-    \fbox{\parbox{0.9\textwidth}{\centering \vspace{2.5cm} \textbf{Figura 1 -- Diagrama de Casos de Uso do SISFEIRA} \\[0.2cm] \textit{(Inserir imagem gerada: diagrama\_casos\_de\_uso.png)} \vspace{2.5cm}}}
+    \includegraphics[width=0.92\textwidth]{DiagramaDeCasosDeUso.png}\\[0.2cm]
+    \small \textbf{Figura 1 -- Diagrama de Casos de Uso do SISFEIRA}
 \end{center}
 
+\vspace{0.4cm}
 \subsection{Diagrama de Classes}
 Estrutura orientada a objetos da camada de domínio contendo nomes de classes, atributos tipados e cardinalidade dos relacionamentos[cite: 8, 10, 12].
 
 \vspace{0.4cm}
 \begin{center}
-    \fbox{\parbox{0.9\textwidth}{\centering \vspace{2.5cm} \textbf{Figura 2 -- Diagrama de Classes de Domínio} \\[0.2cm] \textit{(Inserir imagem gerada: diagrama\_classes.png)} \vspace{2.5cm}}}
+    \includegraphics[width=0.92\textwidth]{DiagramaDeClassesDeDomínio.png}\\[0.2cm]
+    \small \textbf{Figura 2 -- Diagrama de Classes de Domínio}
 \end{center}
 
 \newpage
@@ -555,7 +558,8 @@ Representação do fluxo de processos e ciclo de vida da jornada do cliente e do
 
 \vspace{0.4cm}
 \begin{center}
-    \fbox{\parbox{0.9\textwidth}{\centering \vspace{2.5cm} \textbf{Figura 3 -- Diagrama de Atividades e Ciclo de Vida do Pedido} \\[0.2cm] \textit{(Inserir imagem gerada: diagrama\_atividades.png)} \vspace{2.5cm}}}
+    \includegraphics[width=0.92\textwidth]{DiagramaDeAtividadesECicloDeVidaDoPedido.png}\\[0.2cm]
+    \small \textbf{Figura 3 -- Diagrama de Atividades e Ciclo de Vida do Pedido}
 \end{center}
 
 \subsection{Dicionário de Dados (DD)}
