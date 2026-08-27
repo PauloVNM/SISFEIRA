@@ -1,14 +1,14 @@
 # SISFEIRA - Sistema de Gestão de Pedidos para Feiras Locais
 
 ## Sobre o Projeto
-O **SISFEIRA** é uma aplicação web desenvolvida para conectar produtores da agricultura familiar do Amazonas aos seus clientes[cite: 1]. O sistema disponibiliza um catálogo semanal de produtos, permitindo a gestão de pedidos antecipados para reduzir o desperdício de alimentos e ampliar o alcance de vendas da feira local[cite: 1].
+O **SISFEIRA** é uma aplicação web desenvolvida para conectar produtores da agricultura familiar do Amazonas aos seus clientes. O sistema disponibiliza um catálogo semanal de produtos, permitindo a gestão de pedidos antecipados para reduzir o desperdício de alimentos e ampliar o alcance de vendas da feira local.
 
 ## Tecnologias Utilizadas
-* **Front-end:** HTML5, CSS3 (Flexbox/Grid), Vanilla JavaScript (ES6+), abordagem *Zero-Build-Step*[cite: 1].
+* **Front-end:** HTML5, CSS3 (Flexbox/Grid), Vanilla JavaScript (ES6+), abordagem *Zero-Build-Step*.
 * **Back-end:** Node.js (LTS), Express.js[cite: 1].
 * **Banco de Dados:** PostgreSQL (driver `pg` nativo)[cite: 1].
 * **Autenticação e Segurança:** JWT (JSON Web Tokens) e bcrypt[cite: 1].
-* **Infraestrutura:** Host Único Bare-Metal (Debian/Linux), execução nativa sem contêineres[cite: 1].
+* **Infraestrutura:** Host Único Bare-Metal (Debian/Linux), execução nativa sem contêineres.
 
 ---
 
