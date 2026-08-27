@@ -84,4 +84,4 @@ Se você é um assistente de IA interagindo com este repositório para sugerir, 
 3. **Contratos Estritos (`docs/api.md` & `docs/database.md`):** Qualquer nova funcionalidade no back-end deve respeitar as colunas físicas mapeadas no schema e os padrões de payloads REST documentados. Nunca adicione colunas "silenciosamente" sem atualizar a documentação.
 4. **Comportamento em Interface (`docs/frontend.md`):** Componentes visuais são manipulados via manipulação direta de DOM nativo e `Template Literals`. O armazenamento de estado transitório (carrinho, token) utiliza exclusivamente o `localStorage`.
 5. **Dúvidas e Lacunas:** Se uma solicitação técnica gerar conflito com as regras documentadas ou carecer de especificações (ex: "Crie a tela X" mas não há API mapeada), você deve sinalizar a lacuna ao operador antes de gerar código especulativo.
-6. 
+   
