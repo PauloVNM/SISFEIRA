@@ -37,6 +37,34 @@
 \usepackage{titlesec}
 \usepackage{enumitem}
 \usepackage{tocloft}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinelanguage{SQLCustom}{
+    language=SQL,
+    morekeywords={
+        UUID, VARCHAR, TEXT, DECIMAL, BOOLEAN, TIMESTAMP,
+        PRIMARY, KEY, REFERENCES, CONSTRAINT, CHECK,
+        CURRENT_TIMESTAMP, TRUE, FALSE
+    }
+}
+
+\lstset{
+    language=SQLCustom,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\bfseries,
+    commentstyle=\itshape,
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=8pt,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    frame=single,
+    captionpos=b
+}
 
 % Formatação dos Títulos de Seção
 \titleformat{\section}
@@ -247,17 +275,23 @@ Tabela 13 -- Orçamento Consolidado do Projeto \dotfill 25
 % ------------------------------------------------------------------------------
 % 1. APRESENTAÇÃO
 % ------------------------------------------------------------------------------
+
 \section{Apresentação}
 
-Este relatório apresenta a síntese das atividades desenvolvidas durante a etapa de Levantamento de Requisitos e Mapeamento de Processos referente à Prática Profissional Supervisionada no âmbito do Curso Técnico em Desenvolvimento de Sistemas do CETAM[cite: 10, 12]. Durante este período, as ações estiveram concentradas no estudo, especificação técnica e modelagem do projeto \textbf{SISFEIRA}, uma aplicação web voltada à modernização da cadeia de comercialização das feiras livres de produtores locais e agricultores familiares[cite: 1, 10, 12].
+Este relatório apresenta a síntese das atividades desenvolvidas durante a etapa de Levantamento de Requisitos e Mapeamento de Processos referente à Prática Profissional Supervisionada no âmbito do Curso Técnico em Desenvolvimento de Sistemas do CETAM. Durante este período, as ações estiveram concentradas no estudo, especificação técnica e modelagem do projeto \textbf{SISFEIRA}, uma aplicação web voltada à modernização da cadeia de comercialização das feiras livres de produtores locais e agricultores familiares.
 
-A execução desta prática justifica-se pela necessidade de alinhar o desenvolvimento de software aos preceitos da engenharia e da gestão de processos contemporânea[cite: 10, 12]. Ao permitir que os clientes visualizem a oferta semanal e realizem seus pedidos antecipadamente, o sistema possibilita que os feirantes colham e transportem estritamente a quantidade demandada, mitigando perdas financeiras e o descarte de alimentos perecíveis[cite: 1, 10]. 
+A execução desta prática justifica-se pela necessidade de alinhar o desenvolvimento de software aos preceitos da engenharia e da gestão de processos contemporânea. Ao permitir que os clientes visualizem a oferta semanal e realizem seus pedidos antecipadamente, o sistema possibilita que os feirantes colham e transportem estritamente a quantidade demandada, mitigando perdas financeiras e o descarte de alimentos perecíveis.
 
-A solução técnica prioriza simplicidade operacional, controle e baixo custo, adotando tecnologias abertas (HTML5, CSS3, Vanilla JS, Node.js, Express e PostgreSQL) executadas nativamente em ambiente Debian Linux[cite: 1, 3, 5, 6, 9, 10]. Diante desse contexto, a presente etapa prática teve como objetivo geral mapear o fluxo operacional das feiras e estruturar a especificação técnica para a construção do Produto Mínimo Viável (MVP) em um ciclo de 15 dias[cite: 1, 10, 12]. Como objetivos específicos, esta prática buscou[cite: 10, 12]:
-\begin{enumerate}[label=\alph*)]
-    \item Mapear as rotinas de catálogo, reserva de itens e controle físico de entregas na banca[cite: 1, 10, 12];
-    \item Identificar as falhas de previsão de demanda que afetam agricultores e consumidores[cite: 1, 10, 12];
-    \item Aplicar ferramentas modernas de modelagem conceitual, prototipação e gerência de requisitos para fundamentar a viabilidade técnica do SISFEIRA[cite: 1, 10, 12].
+A solução técnica prioriza simplicidade operacional, controle e baixo custo, adotando tecnologias abertas (HTML5, CSS3, Vanilla JS, Node.js, Express e PostgreSQL) executadas nativamente em ambiente Debian Linux. Diante desse contexto, a presente etapa prática teve como objetivo geral mapear o fluxo operacional das feiras e estruturar a especificação técnica para a construção do Produto Mínimo Viável (MVP) em um ciclo de 15 dias. Como objetivos específicos, esta prática buscou:
+
+\begin{enumerate}[label=\alph*\*)]
+
+    \item Mapear as rotinas de catálogo, reserva de itens e controle físico de entregas na banca;
+
+    \item Identificar as falhas de previsão de demanda que afetam agricultores e consumidores;
+
+    \item Aplicar ferramentas modernas de modelagem conceitual, prototipação e gerência de requisitos para fundamentar a viabilidade técnica do SISFEIRA.
+
 \end{enumerate}
 
 \newpage
@@ -265,38 +299,53 @@ A solução técnica prioriza simplicidade operacional, controle e baixo custo, 
 % ------------------------------------------------------------------------------
 % 2. CARACTERIZAÇÃO DO PROBLEMA E JUSTIFICATIVA
 % ------------------------------------------------------------------------------
+
 \section{Caracterização do Problema e Justificativa}
 
 \subsection{A Importância do Problema para a Comunidade}
-As feiras livres constituem o principal canal de escoamento da agricultura familiar no Amazonas[cite: 1, 10]. Contudo, a ausência de mecanismos digitais de previsão de demanda acarreta gargalos crônicos: desabastecimento precoce de mercadorias procuradas ou excedente de produtos perecíveis que acabam descartados[cite: 1, 10]. O SISFEIRA soluciona esse cenário ao criar uma vitrine de pedidos antecipados, proporcionando previsibilidade ao feirante e conveniência ao comprador[cite: 1, 10].
+
+As feiras livres constituem o principal canal de escoamento da agricultura familiar no Amazonas. Contudo, a ausência de mecanismos digitais de previsão de demanda acarreta gargalos crônicos: desabastecimento precoce de mercadorias procuradas ou excedente de produtos perecíveis que acabam descartados. O SISFEIRA soluciona esse cenário ao criar uma vitrine de pedidos antecipados, proporcionando previsibilidade ao feirante e conveniência ao comprador.
 
 \subsection{Projetos Semelhantes e Complementaridade}
-Diferente de sistemas governamentais estaduais ou de grandes plataformas proprietárias de comércio eletrônico, o SISFEIRA atua de maneira descentralizada e leve[cite: 1, 10, 12]. O sistema foca nas especificidades comunitárias locais, servindo como canal ágil de captação de encomendas sem a imposição de taxas transacionais ou burocracias de pagamento eletrônico no MVP[cite: 1, 10, 12].
+
+Diferente de sistemas governamentais estaduais ou de grandes plataformas proprietárias de comércio eletrônico, o SISFEIRA atua de maneira descentralizada e leve. O sistema foca nas especificidades comunitárias locais, servindo como canal ágil de captação de encomendas sem a imposição de taxas transacionais ou burocracias de pagamento eletrônico no MVP.
 
 \subsection{Benefícios Esperados}
+
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Impacto Social:} Inclusão sociodigital dos feirantes por meio de interfaces responsivas (\textit{Mobile-First}) de usabilidade direta[cite: 1, 5, 10, 12].
-    \item \textbf{Impacto Econômico:} Redução de perdas financeiras dos agricultores familiares com colheitas ajustadas à demanda real[cite: 1, 10, 12].
-    \item \textbf{Impacto Ambiental:} Mitigação do desperdício de alimentos orgânicos e racionalização do frete das comunidades rurais até Manaus[cite: 1, 10, 12].
+
+    \item \textbf{Impacto Social:} Inclusão sociodigital dos feirantes por meio de interfaces responsivas (\textit{Mobile-First}) de usabilidade direta.
+
+    \item \textbf{Impacto Econômico:} Redução de perdas financeiras dos agricultores familiares com colheitas ajustadas à demanda real.
+
+    \item \textbf{Impacto Ambiental:} Mitigação do desperdício de alimentos orgânicos e racionalização do frete das comunidades rurais até Manaus.
+
 \end{itemize}
 
 \subsection{Embasamento na Literatura (Justificativa Técnica)}
-A digitalização de processos operacionais encontra sólido respaldo na literatura técnica[cite: 10, 12]. Segundo Pressman e Maxim (2016), a aplicação de requisitos rigorosos e modelagem conceitual assegura a sustentabilidade do software[cite: 10]. Conforme Elmasri e Navathe (2018), a consistência transacional relacional (ACID) é indispensável para integridade de compras e estoques[cite: 10].
+
+A digitalização de processos operacionais encontra sólido respaldo na literatura técnica. Segundo Pressman e Maxim (2016), a aplicação de requisitos rigorosos e modelagem conceitual assegura a sustentabilidade do software. Conforme Elmasri e Navathe (2018), a consistência transacional relacional (ACID) é indispensável para integridade de compras e estoques.
 
 \newpage
 
 % ------------------------------------------------------------------------------
 % 3. ÁREA DE ABRANGÊNCIA
 % ------------------------------------------------------------------------------
+
 \section{Área de Abrangência}
 
-A área de abrangência do projeto compreende o ambiente operacional das feiras livres e eventos de produtores locais no Estado do Amazonas, com foco inicial de aplicação em feiras comunitárias no município de Manaus[cite: 1, 10]. O sistema foi concebido com arquitetura genérica para atender diferentes espaços físicos[cite: 1, 10].
+A área de abrangência do projeto compreende o ambiente operacional das feiras livres e eventos de produtores locais no Estado do Amazonas, com foco inicial de aplicação em feiras comunitárias no município de Manaus. O sistema foi concebido com arquitetura genérica para atender diferentes espaços físicos.
 
-Os agentes abrangidos pelo sistema dividem-se em três perfis[cite: 1, 8, 10]:
+Os agentes abrangidos pelo sistema dividem-se em três perfis:
+
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Produtores Locais / Feirantes:} Cadastram seus itens agrícolas, acompanham notificações de compras e preparam as encomendas[cite: 1, 8, 10].
-    \item \textbf{Clientes / Compradores:} Consultam o catálogo semanal e reservam previamente os produtos para retirada física[cite: 1, 8, 10].
-    \item \textbf{Organização da Feira:} Coordena parâmetros operacionais, ativa edições semanais e define pontos de entrega/coleta[cite: 1, 8, 10].
+
+    \item \textbf{Produtores Locais / Feirantes:} Cadastram seus itens agrícolas, acompanham notificações de compras e preparam as encomendas.
+
+    \item \textbf{Clientes / Compradores:} Consultam o catálogo semanal e reservam previamente os produtos para retirada física.
+
+    \item \textbf{Organização da Feira:} Coordena parâmetros operacionais, ativa edições semanais e define pontos de entrega/coleta.
+
 \end{itemize}
 
 \newpage
@@ -304,25 +353,39 @@ Os agentes abrangidos pelo sistema dividem-se em três perfis[cite: 1, 8, 10]:
 % ------------------------------------------------------------------------------
 % 4. OBJETIVOS
 % ------------------------------------------------------------------------------
+
 \section{Objetivos}
 
 \subsection{Objetivo Geral}
-Desenvolver e implementar uma aplicação web para a gestão de pedidos antecipados, catálogo de produtos locais e controle de pontos de retirada para feiras livres, estabelecendo um canal digital eficiente entre a agricultura familiar e os consumidores[cite: 1, 10, 12].
+
+Desenvolver e implementar uma aplicação web para a gestão de pedidos antecipados, catálogo de produtos locais e controle de pontos de retirada para feiras livres, estabelecendo um canal digital eficiente entre a agricultura familiar e os consumidores.
 
 \subsection{Objetivos Específicos}
+
 \begin{itemize}[leftmargin=1.5cm]
-    \item Implementar o módulo de cadastro e gestão de produtores e seus respectivos catálogos de produtos[cite: 1, 10, 12];
-    \item Desenvolver a interface pública de visualização do catálogo organizado por semana/edição da feira[cite: 1, 10, 12];
-    \item Construir o carrinho de compras e o fluxo de emissão de pedidos sem exigência de pagamento eletrônico imediato[cite: 1, 10, 12];
-    \item Disponibilizar o acompanhamento do status do pedido (\texttt{RECEBIDO}, \texttt{EM\_PREPARACAO} e \texttt{ENTREGUE}) com emissão de comprovante digital com código único[cite: 1, 8, 10, 12];
-    \item Implementar protocolos de segurança e privacidade alinhados à LGPD[cite: 9, 10, 12];
-    \item Gerar relatórios automatizados de vendas consolidadas exclusivos para cada produtor[cite: 1, 4, 10, 12].
+
+    \item Implementar o módulo de cadastro e gestão de produtores e seus respectivos catálogos de produtos;
+
+    \item Desenvolver a interface pública de visualização do catálogo organizado por semana/edição da feira;
+
+    \item Construir o carrinho de compras e o fluxo de emissão de pedidos sem exigência de pagamento eletrônico imediato;
+
+    \item Disponibilizar o acompanhamento do status do pedido (\texttt{RECEBIDO}, \texttt{EM\_PREPARACAO} e \texttt{ENTREGUE}) com emissão de comprovante digital com código único;
+
+    \item Implementar protocolos de segurança e privacidade alinhados à LGPD;
+
+    \item Gerar relatórios automatizados de vendas consolidadas exclusivos para cada produtor.
+
 \end{itemize}
 
 \subsection{Delimitação do Escopo do MVP}
+
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Escopo Contemplado:} Cadastro de usuários, vitrine virtual, gestão de carrinho com persistência local, emissão de comprovante para retirada física, painel de controle do feirante e relatórios analíticos básicos[cite: 1, 5, 9, 10].
-    \item \textbf{Não-Escopo:} O sistema não contempla integração com gateways bancários/cartão de crédito (o pagamento ocorre presencialmente na banca), rastreamento por GPS ou serviços de entrega terceirizada (delivery)[cite: 1, 10].
+
+    \item \textbf{Escopo Contemplado:} Cadastro de usuários, vitrine virtual, gestão de carrinho com persistência local, emissão de comprovante para retirada física, painel de controle do feirante e relatórios analíticos básicos.
+
+    \item \textbf{Não-Escopo:} O sistema não contempla integração com gateways bancários/cartão de crédito (o pagamento ocorre presencialmente na banca), rastreamento por GPS ou serviços de entrega terceirizada (delivery).
+
 \end{itemize}
 
 \newpage
@@ -330,16 +393,23 @@ Desenvolver e implementar uma aplicação web para a gestão de pedidos antecipa
 % ------------------------------------------------------------------------------
 % 5. METAS
 % ------------------------------------------------------------------------------
+
 \section{Metas}
 
-As metas do projeto representam as entregas parciais e finais quantificadas ao longo do período de 15 dias de execução[cite: 10, 12]:
+As metas do projeto representam as entregas parciais e finais quantificadas ao longo do período de 15 dias de execução:
 
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Meta 1 (Dias 1 a 3):} Concluir 100\% do levantamento e detalhamento dos Requisitos Funcionais e Não Funcionais no Documento de Especificação de Requisitos e estruturar o esquema do banco de dados relacional[cite: 10].
-    \item \textbf{Meta 2 (Dias 4 a 6):} Elaborar e validar os protótipos navegáveis das 7 telas centrais da aplicação no Figma (Login/Cadastro, Catálogo, Carrinho, Comprovante, Painel do Produtor, Status do Pedido e Relatórios)[cite: 10].
-    \item \textbf{Meta 3 (Dias 7 a 11):} Desenvolver 100\% dos módulos de back-end (API REST em Node.js com PostgreSQL) e as interfaces responsivas em Vanilla JS[cite: 3, 5, 10].
-    \item \textbf{Meta 4 (Dias 12 a 13):} Executar os testes integrados de ponta a ponta simulando o fluxo completo de cadastro, montagem de pedido, comprovante e evolução de status[cite: 10].
-    \item \textbf{Meta 5 (Dias 14 a 15):} Finalizar a documentação técnica consolidada, gerar o relatório impresso e estruturar a apresentação oral do projeto[cite: 10].
+
+    \item \textbf{Meta 1 (Dias 1 a 3):} Concluir 100\% do levantamento e detalhamento dos Requisitos Funcionais e Não Funcionais no Documento de Especificação de Requisitos e estruturar o esquema do banco de dados relacional.
+
+    \item \textbf{Meta 2 (Dias 4 a 6):} Elaborar e validar os protótipos navegáveis das 7 telas centrais da aplicação no Figma (Login/Cadastro, Catálogo, Carrinho, Comprovante, Painel do Produtor, Status do Pedido e Relatórios).
+
+    \item \textbf{Meta 3 (Dias 7 a 11):} Desenvolver 100\% dos módulos de back-end (API REST em Node.js com PostgreSQL) e as interfaces responsivas em Vanilla JS.
+
+    \item \textbf{Meta 4 (Dias 12 a 13):} Executar os testes integrados de ponta a ponta simulando o fluxo completo de cadastro, montagem de pedido, comprovante e evolução de status.
+
+    \item \textbf{Meta 5 (Dias 14 a 15):} Finalizar a documentação técnica consolidada, gerar o relatório impresso e estruturar a apresentação oral do projeto.
+
 \end{itemize}
 
 \newpage
@@ -347,427 +417,832 @@ As metas do projeto representam as entregas parciais e finais quantificadas ao l
 % ------------------------------------------------------------------------------
 % 6. FASES DE EXECUÇÃO
 % ------------------------------------------------------------------------------
+
 \section{Fases de Execução}
 
 \subsection{Entrevistas (Questionário Google Forms)}
 
 \noindent \textbf{Questionário de Diagnóstico: Processo de Matrícula}\\
-\textit{Pesquisa de Satisfação e Melhoria -- Matrículas Escolares}[cite: 12]
+
+\textit{Pesquisa de Satisfação e Melhoria -- Matrículas Escolares}
 
 \vspace{0.2cm}
-\noindent Este questionário é rápido, anônimo e tem como objetivo entender as dificuldades do atual modelo de matrículas (presencial) para ajudar no desenvolvimento de uma nova solução tecnológica para a nossa comunidade[cite: 12].
+
+\noindent Este questionário é rápido, anônimo e tem como objetivo entender as dificuldades do atual modelo de matrículas (presencial) para ajudar no desenvolvimento de uma nova solução tecnológica para a nossa comunidade.
 
 \vspace{0.3cm}
-\noindent \textbf{1. Qual é o seu principal vínculo com a instituição de ensino?} \textit{(Tipo no Forms: Múltipla escolha)}[cite: 12]
+
+\noindent \textbf{1. Qual é o seu principal vínculo com a instituição de ensino?} \textit{(Tipo no Forms: Múltipla escolha)}
+
 \begin{itemize}[leftmargin=1.0cm, noitemsep]
-    \item ( ) Sou aluno(a) do ensino médio ou de cursos técnicos[cite: 12]
-    \item ( ) Sou pai/mãe ou responsável por um aluno[cite: 12]
-    \item ( ) Sou funcionário(a) da secretaria ou setor administrativo[cite: 12]
-    \item ( ) Sou professor(a) ou coordenador(a)[cite: 12]
+
+    \item ( ) Sou aluno(a) do ensino médio ou de cursos técnicos
+
+    \item ( ) Sou pai/mãe ou responsável por um aluno
+
+    \item ( ) Sou funcionário(a) da secretaria ou setor administrativo
+
+    \item ( ) Sou professor(a) ou coordenador(a)
+
 \end{itemize}
 
 \vspace{0.2cm}
-\noindent \textbf{2. Como você avalia a sua experiência geral com o atual modelo físico (presencial) de matrículas e renovações na escola?} \textit{(Tipo no Forms: Escala linear de 1 a 5)}[cite: 12]
+
+\noindent \textbf{2. Como você avalia a sua experiência geral com o atual modelo físico (presencial) de matrículas e renovações na escola?} \textit{(Tipo no Forms: Escala linear de 1 a 5)}
+
 \begin{itemize}[leftmargin=1.0cm, noitemsep]
-    \item ( 1 ) Muito insatisfatória / Desgastante[cite: 12]
-    \item ( 2 ) Insatisfatória[cite: 12]
-    \item ( 3 ) Razoável / Indiferente[cite: 12]
-    \item ( 4 ) Satisfatória[cite: 12]
-    \item ( 5 ) Muito satisfatória / Excelente[cite: 12]
+
+    \item (1) Muito insatisfatória / Desgastante
+
+    \item (2) Insatisfatória
+
+    \item (3) Razoável / Indiferente
+
+    \item (4) Satisfatória
+
+    \item (5) Muito satisfatória / Excelente
+
 \end{itemize}
 
 \vspace{0.2cm}
-\noindent \textbf{3. No último período de matrículas, qual foi o tempo médio que você gastou presencialmente na escola (incluindo tempo de fila e atendimento)?} \textit{(Tipo no Forms: Múltipla escolha)}[cite: 12]
+
+\noindent \textbf{3. No último período de matrículas, qual foi o tempo médio que você gastou presencialmente na escola (incluindo tempo de fila e atendimento)?} \textit{(Tipo no Forms: Múltipla escolha)}
+
 \begin{itemize}[leftmargin=1.0cm, noitemsep]
-    \item ( ) Menos de 30 minutos[cite: 12]
-    \item ( ) Entre 30 minutos e 1 hora[cite: 12]
-    \item ( ) Entre 1 e 3 horas[cite: 12]
-    \item ( ) Mais de 3 horas[cite: 12]
-    \item ( ) Não participei do último processo de matrícula[cite: 12]
+
+    \item ( ) Menos de 30 minutos
+
+    \item ( ) Entre 30 minutos e 1 hora
+
+    \item ( ) Entre 1 e 3 horas
+
+    \item ( ) Mais de 3 horas
+
+    \item ( ) Não participei do último processo de matrícula
+
 \end{itemize}
 
 \vspace{0.2cm}
-\noindent \textbf{4. Qual foi a maior dificuldade enfrentada durante o processo presencial?} \textit{(Tipo no Forms: Múltipla escolha)}[cite: 12]
+
+\noindent \textbf{4. Qual foi a maior dificuldade enfrentada durante o processo presencial?} \textit{(Tipo no Forms: Múltipla escolha)}
+
 \begin{itemize}[leftmargin=1.0cm, noitemsep]
-    \item ( ) Longas filas de espera e superlotação[cite: 12]
-    \item ( ) Falta de clareza sobre a quantidade de vagas disponíveis[cite: 12]
-    \item ( ) Burocracia com cópias de documentos físicos (papel)[cite: 12]
-    \item ( ) Dificuldade de ir à escola no horário de funcionamento[cite: 12]
-    \item ( ) Não tive nenhuma dificuldade[cite: 12]
+
+    \item ( ) Longas filas de espera e superlotação
+
+    \item ( ) Falta de clareza sobre a quantidade de vagas disponíveis
+
+    \item ( ) Burocracia com cópias de documentos físicos (papel)
+
+    \item ( ) Dificuldade de ir à escola no horário de funcionamento
+
+    \item ( ) Não tive nenhuma dificuldade
+
 \end{itemize}
 
 \vspace{0.2cm}
-\noindent \textbf{5. Pensando na sua rotina, qual é o seu nível de acesso à internet para utilizar um futuro sistema digital?} \textit{(Tipo no Forms: Múltipla escolha)}[cite: 12]
+
+\noindent \textbf{5. Pensando na sua rotina, qual é o seu nível de acesso à internet para utilizar um futuro sistema digital?} \textit{(Tipo no Forms: Múltipla escolha)}
+
 \begin{itemize}[leftmargin=1.0cm, noitemsep]
-    \item ( ) Tenho bom acesso à internet pelo celular e computador[cite: 12]
-    \item ( ) Tenho acesso à internet apenas pelo celular (smartphone)[cite: 12]
-    \item ( ) Meu acesso à internet é limitado ou instável[cite: 12]
-    \item ( ) Não tenho acesso à internet em casa[cite: 12]
+
+    \item ( ) Tenho bom acesso à internet pelo celular e computador
+
+    \item ( ) Tenho acesso à internet apenas pelo celular (smartphone)
+
+    \item ( ) Meu acesso à internet é limitado ou instável
+
+    \item ( ) Não tenho acesso à internet em casa
+
 \end{itemize}
 
 \vspace{0.2cm}
-\noindent \textbf{6. Você seria a favor da substituição do modelo presencial de matrículas por um sistema 100\% online (SisMatrícula), que pudesse ser acessado de casa?} \textit{(Tipo no Forms: Múltipla escolha)}[cite: 12]
+
+\noindent \textbf{6. Você seria a favor da substituição do modelo presencial de matrículas por um sistema 100\% online (SisMatrícula), que pudesse ser acessado de casa?} \textit{(Tipo no Forms: Múltipla escolha)}
+
 \begin{itemize}[leftmargin=1.0cm, noitemsep]
-    \item ( ) Sim, com certeza[cite: 12]
-    \item ( ) Sim, mas manteria o atendimento presencial apenas para quem não tem internet[cite: 12]
-    \item ( ) Não, prefiro o método tradicional no papel[cite: 12]
-    \item ( ) Sou indiferente[cite: 12]
+
+    \item ( ) Sim, com certeza
+
+    \item ( ) Sim, mas manteria o atendimento presencial apenas para quem não tem internet
+
+    \item ( ) Não, prefiro o método tradicional no papel
+
+    \item ( ) Sou indiferente
+
 \end{itemize}
 
 \vspace{0.2cm}
-\noindent \textbf{7. Você se sentiria seguro(a) enviando fotos ou PDFs dos seus documentos pessoais e comprovantes através de um sistema oficial da escola?} \textit{(Tipo no Forms: Múltipla escolha)}[cite: 12]
+
+\noindent \textbf{7. Você se sentiria seguro(a) enviando fotos ou PDFs dos seus documentos pessoais e comprovantes através de um sistema oficial da escola?} \textit{(Tipo no Forms: Múltipla escolha)}
+
 \begin{itemize}[leftmargin=1.0cm, noitemsep]
-    \item ( ) Sim, totalmente seguro(a)[cite: 12]
-    \item ( ) Parcialmente, desde que o sistema garanta a proteção dos dados[cite: 12]
-    \item ( ) Não me sentiria seguro(a)[cite: 12]
+
+    \item ( ) Sim, totalmente seguro(a)
+
+    \item ( ) Parcialmente, desde que o sistema garanta a proteção dos dados
+
+    \item ( ) Não me sentiria seguro(a)
+
 \end{itemize}
 
 \vspace{0.2cm}
-\noindent \textbf{8. Na sua opinião, qual deve ser a funcionalidade MAIS importante no novo sistema de matrículas?} \textit{(Tipo no Forms: Múltipla escolha)}[cite: 12]
+
+\noindent \textbf{8. Na sua opinião, qual deve ser a funcionalidade MAIS importante no novo sistema de matrículas?} \textit{(Tipo no Forms: Múltipla escolha)}
+
 \begin{itemize}[leftmargin=1.0cm, noitemsep]
-    \item ( ) \textbf{Rapidez e estabilidade:} O sistema não travar no dia de abertura das vagas[cite: 12].
-    \item ( ) \textbf{Transparência:} Mostrar em tempo real sua posição na fila ou as vagas restantes[cite: 12].
-    \item ( ) \textbf{Facilidade de uso:} Ser simples e fácil de preencher pelo celular[cite: 12].
-    \item ( ) \textbf{Comunicação:} Enviar alertas (por e-mail ou WhatsApp) confirmando que a matrícula deu certo[cite: 12].
+
+    \item ( ) \textbf{Rapidez e estabilidade:} O sistema não travar no dia de abertura das vagas
+
+    \item ( ) \textbf{Transparência:} Mostrar em tempo real sua posição na fila ou as vagas restantes
+
+    \item ( ) \textbf{Facilidade de uso:} Ser simples e fácil de preencher pelo celular
+
+    \item ( ) \textbf{Comunicação:} Enviar alertas (por e-mail ou WhatsApp) confirmando que a matrícula deu certo
+
 \end{itemize}
 
 \newpage
 
 \subsection{Requisitos e Regras de Negócio}
 
-\noindent \textbf{Requisitos Funcionais (RF): O que o sistema deve fazer}[cite: 10, 12]
+\noindent \textbf{Requisitos Funcionais (RF): O que o sistema deve fazer}
 
 \vspace{0.3cm}
+
 \noindent
+
 \begin{spacing}{1.15}
+
 \begin{tabularx}{\textwidth}{c p{4.5cm} X}
+
 \hline
+
 \textbf{Código} & \textbf{Identificador} & \textbf{Descrição do Requisito} \\ \hline
-\textbf{RF01} & Cadastro de Produtores e Produtos & Permitir o cadastro de produtores e o gerenciamento autônomo dos produtos de seu catálogo agrícola[cite: 1, 10]. \\
-\textbf{RF02} & Cadastro de Clientes & Permitir o registro e a autenticação de clientes/compradores para emissão de pedidos[cite: 1, 10]. \\
-\textbf{RF03} & Catálogo Semanal da Feira & Disponibilizar a visualização pública dos produtos cadastrados para a edição ativa da feira[cite: 1, 10]. \\
-\textbf{RF04} & Carrinho de Compras & Permitir que o cliente selecione múltiplos itens, defina quantidades e estruture seu pedido[cite: 1, 10]. \\
-\textbf{RF05} & Confirmação e Comprovante & Confirmar a compra, registrando o pedido e emitindo comprovante digital com código único[cite: 1, 10]. \\
-\textbf{RF06} & Gestão do Status do Pedido & Permitir ao produtor acompanhar e atualizar o estado do pedido (\texttt{RECEBIDO}, \texttt{EM\_PREPARACAO}, \texttt{ENTREGUE})[cite: 1, 8, 10]. \\
-\textbf{RF07} & Histórico de Pedidos & Disponibilizar ao cliente a consulta de compras anteriores e acompanhamento de pedidos ativos[cite: 1, 10]. \\
-\textbf{RF08} & Relatório de Vendas & Gerar relatórios analíticos de vendas e faturamento consolidados exclusivos para cada produtor[cite: 1, 4, 10]. \\
-\textbf{RF09} & Notificação de Novos Pedidos & Emitir alertas no painel do produtor e disparar notificações transacionais de novas encomendas[cite: 1, 10]. \\
-\textbf{RF10} & Definição do Ponto de Retirada & Exibir e exigir a seleção do local físico de coleta homologado para a feira[cite: 1, 10]. \\ \hline
+
+\textbf{RF01} & Cadastro de Produtores e Produtos & Permitir o cadastro de produtores e o gerenciamento autônomo dos produtos de seu catálogo agrícola. \\
+
+\textbf{RF02} & Cadastro de Clientes & Permitir o registro e a autenticação de clientes/compradores para emissão de pedidos. \\
+
+\textbf{RF03} & Catálogo Semanal da Feira & Disponibilizar a visualização pública dos produtos cadastrados para a edição ativa da feira. \\
+
+\textbf{RF04} & Carrinho de Compras & Permitir que o cliente selecione múltiplos itens, defina quantidades e estruture seu pedido. \\
+
+\textbf{RF05} & Confirmação e Comprovante & Confirmar a compra, registrando o pedido e emitindo comprovante digital com código único. \\
+
+\textbf{RF06} & Gestão do Status do Pedido & Permitir ao produtor acompanhar e atualizar o estado do pedido (\texttt{RECEBIDO}, \texttt{EM\_PREPARACAO}, \texttt{ENTREGUE}). \\
+
+\textbf{RF07} & Histórico de Pedidos & Disponibilizar ao cliente a consulta de compras anteriores e acompanhamento de pedidos ativos. \\
+
+\textbf{RF08} & Relatório de Vendas & Gerar relatórios analíticos de vendas e faturamento consolidados exclusivos para cada produtor. \\
+
+\textbf{RF09} & Notificação de Novos Pedidos & Emitir alertas no painel do produtor e disparar notificações transacionais de novas encomendas. \\
+
+\textbf{RF10} & Definição do Ponto de Retirada & Exibir e exigir a seleção do local físico de coleta homologado para a feira. \\ \hline
+
 \end{tabularx}
+
 \end{spacing}
 
 \vspace{0.6cm}
-\noindent \textbf{Requisitos Não Funcionais (RNF): Restrições e qualidades do sistema}[cite: 10, 12]
+
+\newpage
+
+\noindent \textbf{Requisitos Não Funcionais (RNF): Restrições e qualidades do sistema}
 
 \vspace{0.3cm}
+
 \noindent
+
 \begin{spacing}{1.15}
+
 \begin{tabularx}{\textwidth}{c p{3.5cm} X}
+
 \hline
+
 \textbf{Código} & \textbf{Categoria} & \textbf{Descrição do Requisito} \\ \hline
-\textbf{RNF01} & Desempenho & Garantir carregamento das páginas de catálogo em tempo inferior a 2 segundos em rede padrão[cite: 1, 10]. \\
-\textbf{RNF02} & Segurança & Proteger credenciais com hash seguro (\textit{bcrypt}) e parametrizar queries SQL (\$1, \$2)[cite: 1, 3, 4, 10]. \\
-\textbf{RNF03} & Usabilidade & Fornecer fluxo de compra simples e intuitivo, realizável em poucos cliques[cite: 1, 10]. \\
-\textbf{RNF04} & Disponibilidade & Assegurar disponibilidade estável do servidor durante as janelas de maior demanda da feira[cite: 1, 10]. \\
-\textbf{RNF05} & Portabilidade & Estruturar layout responsivo otimizado para smartphones (\textit{Mobile-First})[cite: 1, 5, 10]. \\
-\textbf{RNF06} & Escalabilidade & Suportar acessos simultâneos sem esgotar conexões via \textit{Connection Pooling} no PostgreSQL[cite: 1, 3, 10]. \\
-\textbf{RNF07} & Manutenibilidade & Adotar arquitetura modular desacoplada separando rotas, controladores, serviços e repositórios[cite: 3, 10]. \\
-\textbf{RNF08} & Integridade Transacional & Garantir consistência estrita (ACID) na persistência de pedidos via transações atômicas nativas[cite: 3, 10]. \\ \hline
+
+\textbf{RNF01} & Desempenho & Garantir carregamento das páginas de catálogo em tempo inferior a 2 segundos em rede padrão. \\
+
+\textbf{RNF02} & Segurança & Proteger credenciais com hash seguro (\textit{bcrypt}) e parametrizar queries SQL (\$1, \$2). \\
+
+\textbf{RNF03} & Usabilidade & Fornecer fluxo de compra simples e intuitivo, realizável em poucos cliques. \\
+
+\textbf{RNF04} & Disponibilidade & Assegurar disponibilidade estável do servidor durante as janelas de maior demanda da feira. \\
+
+\textbf{RNF05} & Portabilidade & Estruturar layout responsivo otimizado para smartphones (\textit{Mobile-First}). \\
+
+\textbf{RNF06} & Escalabilidade & Suportar acessos simultâneos sem esgotar conexões via \textit{Connection Pooling} no PostgreSQL. \\
+
+\textbf{RNF07} & Manutenibilidade & Adotar arquitetura modular desacoplada separando rotas, controladores, serviços e repositórios. \\
+
+\textbf{RNF08} & Integridade Transacional & Garantir consistência estrita (ACID) na persistência de pedidos via transações atômicas nativas. \\ \hline
+
 \end{tabularx}
+
 \end{spacing}
 
 \newpage
 
-\noindent \textbf{Regras de Negócio (RN): Condições e políticas que o sistema deve respeitar}[cite: 10, 12]
+\noindent \textbf{Regras de Negócio (RN): Condições e políticas que o sistema deve respeitar}
 
 \vspace{0.3cm}
+
 \noindent
+
 \begin{spacing}{1.15}
+
 \begin{tabularx}{\textwidth}{c p{4.0cm} X}
+
 \hline
+
 \textbf{Código} & \textbf{Dimensão / Foco} & \textbf{Enunciado da Regra de Negócio} \\ \hline
-\textbf{RNG/SEG 01} & Segurança e Sessão & A autenticação de usuários opera via tokens JWT (expiração padrão de 8h) com autorização RBAC no back-end[cite: 3, 4, 10]. \\
-\textbf{RNG/SEG 02} & Isolamento de Dados & Consultas analíticas e relatórios devem filtrar estritamente o \texttt{produtor\_id} extraído do token[cite: 1, 3, 10]. \\
-\textbf{RNG/USA 03} & Usabilidade e Contato & A confirmação do pedido gera código identificador único e link dinâmico formatado para WhatsApp do feirante[cite: 1, 4, 9, 10]. \\
-\textbf{RNG/USA 04} & Ciclo de Atendimento & O status do pedido evolui exclusivamente de forma sequencial: \texttt{RECEBIDO} $\rightarrow$ \texttt{EM\_PREPARACAO} $\rightarrow$ \texttt{ENTREGUE}[cite: 1, 4, 8, 10]. \\
-\textbf{RNG/DES 05} & Desempenho e Leveza & A interface gráfica adota arquitetura Multi-Page Application (MPA) em Vanilla JS sem compilação (\textit{Zero-Build})[cite: 5, 9, 10]. \\
-\textbf{RNG/DES 06} & Notificação Assíncrona & A criação do pedido registra o alerta no banco e despacha a notificação de e-mail em segundo plano[cite: 2, 9, 10]. \\
-\textbf{RNG/CUS 07} & Custo Zero de Licença & Utilização exclusiva de tecnologias abertas e gratuitas (Node.js, PostgreSQL, Debian Linux)[cite: 6, 9, 10]. \\
-\textbf{RNG/CUS 08} & Infraestrutura Host Único & Execução direta em modo \textit{Bare-Metal} no Linux dispensando despesas com servidores proprietários[cite: 6, 9, 10]. \\ \hline
+
+\textbf{RNG/SEG 01} & Segurança e Sessão & A autenticação de usuários opera via tokens JWT (expiração padrão de 8h) com autorização RBAC no back-end. \\
+
+\textbf{RNG/SEG 02} & Isolamento de Dados & Consultas analíticas e relatórios devem filtrar estritamente o \texttt{produtor\_id} extraído do token. \\
+
+\textbf{RNG/USA 03} & Usabilidade e Contato & A confirmação do pedido gera código identificador único e link dinâmico formatado para WhatsApp do feirante. \\
+
+\textbf{RNG/USA 04} & Ciclo de Atendimento & O status do pedido evolui exclusivamente de forma sequencial: \texttt{RECEBIDO} $\rightarrow$ \texttt{EM\_PREPARACAO} $\rightarrow$ \texttt{ENTREGUE}. \\
+
+\textbf{RNG/DES 05} & Desempenho e Leveza & A interface gráfica adota arquitetura Multi-Page Application (MPA) em Vanilla JS sem compilação (\textit{Zero-Build}). \\
+
+\textbf{RNG/DES 06} & Notificação Assíncrona & A criação do pedido registra o alerta no banco e despacha a notificação de e-mail em segundo plano. \\
+
+\textbf{RNG/CUS 07} & Custo Zero de Licença & Utilização exclusiva de tecnologias abertas e gratuitas (Node.js, PostgreSQL, Debian Linux). \\
+
+\textbf{RNG/CUS 08} & Infraestrutura Host Único & Execução direta em modo \textit{Bare-Metal} no Linux dispensando despesas com servidores proprietários. \\ \hline
+
 \end{tabularx}
+
 \end{spacing}
 
 \subsection{Modelagem (Banco de Dados)}
 
-\noindent \textbf{Entidades e Atributos:} Definição formal das entidades do sistema, atributos tipados e cardinalidade dos relacionamentos que compõem o banco de dados relacional[cite: 2, 4, 10, 12].
+\noindent \textbf{Entidades e Atributos:} Definição formal das entidades do sistema, atributos tipados e cardinalidade dos relacionamentos que compõem o banco de dados relacional.
 
 \vspace{0.4cm}
-\noindent \textbf{Modelo Conceitual:} Diagrama de alto nível representando entidades, atributos e associações[cite: 12].
+
+\noindent \textbf{Modelo Conceitual:} Diagrama de alto nível representando entidades, atributos e associações.
 
 \vspace{0.3cm}
+
 \begin{center}
-    \includegraphics[width=0.95\textwidth]{"ModeloConceitua DeDados.png"}
+
+    \includegraphics[width=0.95\textwidth]{ModeloConceitua DeDados.png}
+
 \end{center}
 
 \vspace{0.4cm}
-\noindent \textbf{Modelo Lógico:} Estruturação das entidades em formato de tabelas com chaves primárias e estrangeiras[cite: 12].
+
+\noindent \textbf{Modelo Lógico:} Estruturação das entidades em formato de tabelas com chaves primárias e estrangeiras.
 
 \vspace{0.3cm}
+
 \begin{center}
+
     \includegraphics[width=0.95\textwidth]{ModeloLogicoDeDados.png}
+
 \end{center}
 
 \vspace{0.4cm}
-\noindent \textbf{Modelo Físico:} Scripts e comandos DDL em código SQL para criação do banco de dados relacional[cite: 12].
+
+\noindent \textbf{Modelo Físico:} Scripts e comandos DDL em código SQL para criação do banco de dados relacional.
 
 \vspace{0.3cm}
-\noindent \textit{(Espaço reservado para inserção dos comandos SQL / DDL de criação das tabelas)}
+
+\subsection{Script de Criação do Banco de Dados}
+
+O script apresentado a seguir demonstra a estrutura inicial do banco de dados
+do SISFEIRA, incluindo a criação das tabelas, restrições de integridade,
+chaves estrangeiras e índices utilizados pela aplicação.
+
+\begin{lstlisting}[caption={Script SQL de criação do banco de dados}, label={lst:script-banco}]
+-- ARQUIVO 1: src/database/migrations/01_schema_inicial.sql
+
+CREATE TABLE usuarios (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nome VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha_hash VARCHAR(255) NOT NULL,
+    telefone VARCHAR(20) NULL,
+    perfil VARCHAR(20) NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_telefone_produtor
+        CHECK (perfil != 'PRODUTOR' OR telefone IS NOT NULL),
+
+    CONSTRAINT chk_perfil_valido
+        CHECK (perfil IN ('CLIENTE', 'PRODUTOR', 'ORGANIZACAO'))
+);
+
+CREATE TABLE produtos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    produtor_id UUID NOT NULL REFERENCES usuarios(id),
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT NULL,
+    preco DECIMAL(10,2) NOT NULL,
+    unidade_medida VARCHAR(20) NOT NULL,
+    ativo BOOLEAN DEFAULT TRUE,
+
+    CONSTRAINT chk_preco_positivo
+        CHECK (preco >= 0)
+);
+
+CREATE TABLE edicoes_feira (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nome_identificador VARCHAR(100) NOT NULL,
+    ativa BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE pontos_retirada (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nome VARCHAR(150) NOT NULL,
+    endereco TEXT NOT NULL
+);
+
+CREATE TABLE pedidos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    cliente_id UUID NOT NULL REFERENCES usuarios(id),
+    edicao_id UUID NOT NULL REFERENCES edicoes_feira(id),
+    ponto_retirada_id UUID NOT NULL REFERENCES pontos_retirada(id),
+    comprovante_codigo VARCHAR(20) NOT NULL UNIQUE,
+    status VARCHAR(30) NOT NULL,
+    valor_total DECIMAL(10,2) NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_status_pedido
+        CHECK (
+            status IN (
+                'RECEBIDO',
+                'EM_PREPARACAO',
+                'ENTREGUE'
+            )
+        )
+);
+
+CREATE TABLE itens_pedido (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    pedido_id UUID NOT NULL
+        REFERENCES pedidos(id) ON DELETE CASCADE,
+    produto_id UUID NOT NULL REFERENCES produtos(id),
+    quantidade INTEGER NOT NULL,
+    preco_unitario DECIMAL(10,2) NOT NULL,
+
+    CONSTRAINT chk_quantidade_positiva
+        CHECK (quantidade > 0)
+);
+
+CREATE TABLE notificacoes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    produtor_id UUID NOT NULL REFERENCES usuarios(id),
+    pedido_id UUID NOT NULL REFERENCES pedidos(id),
+    mensagem TEXT NOT NULL,
+    lida BOOLEAN DEFAULT FALSE
+);
+
+CREATE INDEX idx_produtos_produtor
+    ON produtos(produtor_id);
+
+CREATE INDEX idx_pedidos_cliente
+    ON pedidos(cliente_id, criado_em DESC);
+
+CREATE INDEX idx_notificacoes_nao_lidas
+    ON notificacoes(produtor_id)
+    WHERE lida = FALSE;
+
+CREATE INDEX idx_itens_pedido_agrupamento
+    ON itens_pedido(produto_id);
+\end{lstlisting}
 
 \newpage
-
 % ------------------------------------------------------------------------------
 % 7. METODOLOGIA
 % ------------------------------------------------------------------------------
+
 \section{Metodologia}
 
-A metodologia adotada para o desenvolvimento do SISFEIRA fundamenta-se nas práticas da Engenharia de Software para entrega de um Produto Mínimo Viável (MVP), aliando modelagem conceitual UML, análise de fluxos e definição estrita do Dicionário de Dados[cite: 10, 12].
+A metodologia adotada para o desenvolvimento do SISFEIRA fundamenta-se nas práticas da Engenharia de Software para entrega de um Produto Mínimo Viável (MVP), aliando modelagem conceitual UML, análise de fluxos e definição estrita do Dicionário de Dados.
 
 \subsection{Diagrama de Casos de Uso}
-Representação formal dos atores mapeados (Cliente, Produtor Local, Organização da Feira e Serviço de Notificações) e das ações disponibilizadas pela aplicação[cite: 1, 10, 12].
+
+Representação formal dos atores mapeados (Cliente, Produtor Local, Organização da Feira e Serviço de Notificações) e das ações disponibilizadas pela aplicação.
 
 \vspace{0.4cm}
+
 \begin{center}
+
     \includegraphics[width=0.92\textwidth]{DiagramaDeCasosDeUso.png}\\[0.2cm]
+
     \small \textbf{Figura 1 -- Diagrama de Casos de Uso do SISFEIRA}
+
 \end{center}
 
 \vspace{0.4cm}
+
+\newpage
+
 \subsection{Diagrama de Classes}
-Estrutura orientada a objetos da camada de domínio contendo nomes de classes, atributos tipados e cardinalidade dos relacionamentos[cite: 8, 10, 12].
+
+Estrutura orientada a objetos da camada de domínio contendo nomes de classes, atributos tipados e cardinalidade dos relacionamentos.
 
 \vspace{0.4cm}
+
 \begin{center}
-    \includegraphics[width=0.92\textwidth]{DiagramaDeClassesDeDomínio.png}\\[0.2cm]
+
+    \includegraphics[width=0.82\textwidth]{DiagramaDeClassesDeDominio.png}\\[0.2cm]
+
     \small \textbf{Figura 2 -- Diagrama de Classes de Domínio}
+
 \end{center}
 
 \newpage
 
 \subsection{Diagrama de Atividades}
-Representação do fluxo de processos e ciclo de vida da jornada do cliente e do produtor, da montagem do carrinho à retirada na feira[cite: 1, 8, 10, 12].
+
+Representação do fluxo de processos e ciclo de vida da jornada do cliente e do produtor, da montagem do carrinho à retirada na feira.
 
 \vspace{0.4cm}
+
 \begin{center}
-    \includegraphics[width=0.92\textwidth]{DiagramaDeAtividadesECicloDeVidaDoPedido.png}\\[0.2cm]
+
+    \includegraphics[width=0.32\textwidth]{DiagramaDeAtividadesECicloDeVidaDoPedido.png}\\[0.2cm]
+
     \small \textbf{Figura 3 -- Diagrama de Atividades e Ciclo de Vida do Pedido}
+
 \end{center}
 
 \subsection{Dicionário de Dados (DD)}
-O Dicionário de Dados formaliza o esquema relacional no PostgreSQL, definindo metadados, volume esperado, regras de retenção e restrições de cada tabela[cite: 4, 10, 12].
+
+O Dicionário de Dados formaliza o esquema relacional no PostgreSQL, definindo metadados, volume esperado, regras de retenção e restrições de cada tabela.
 
 \vspace{0.3cm}
 
 % --- TABELA 4: USUÁRIOS ---
+
 \begin{spacing}{1.0}
+
 \small
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+
 \hline
+
 \multicolumn{2}{|l|}{\textbf{ENTIDADE: Usuário}} \\ \hline
-\textbf{Descrição:} & Cadastro de clientes, produtores e organizadores da feira[cite: 4, 10]. \\ \hline
-\textbf{Nome da Tabela:} & \texttt{usuarios}[cite: 4, 10] \\ \hline
-\textbf{Volume Esperado:} & $\approx$ 100 a 500 registros ativos na fase piloto[cite: 10]. \\ \hline
-\textbf{Tempo de Retenção:} & Permanente enquanto a conta mantiver-se ativa[cite: 10]. \\ \hline
-\textbf{Rotina de Limpeza:} & Inativação lógica conforme solicitação do titular (LGPD)[cite: 10]. \\ \hline
+
+\textbf{Descrição:} & Cadastro de clientes, produtores e organizadores da feira. \\ \hline
+
+\textbf{Nome da Tabela:} & \texttt{usuarios} \\ \hline
+
+\textbf{Volume Esperado:} & $\approx$ 100 a 500 registros ativos na fase piloto. \\ \hline
+
+\textbf{Tempo de Retenção:} & Permanente enquanto a conta mantiver-se ativa. \\ \hline
+
+\textbf{Rotina de Limpeza:} & Inativação lógica conforme solicitação do titular (LGPD). \\ \hline
+
 \end{tabularx}
 
 \vspace{0.25cm}
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+
 \hline
+
 \multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{usuarios}}} \\ \hline
+
 \textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
-Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador único gerado por \texttt{gen\_random\_uuid()}[cite: 4, 10]. \\ \hline
-Nome & \texttt{nome} & VARCHAR & 150 & NOT NULL & Nome civil completo ou razão social do feirante[cite: 4, 10]. \\ \hline
-E-mail & \texttt{email} & VARCHAR & 150 & NOT NULL, UK & Login único utilizado para emissão do JWT[cite: 4, 10]. \\ \hline
-Hash Senha & \texttt{senha\_hash} & VARCHAR & 255 & NOT NULL & Hash seguro criptografado via \textit{bcrypt} (RNF02)[cite: 4, 10]. \\ \hline
-Telefone & \texttt{telefone} & VARCHAR & 20 & NULL / CHECK & Contato com DDD; obrigatório para perfil PRODUTOR[cite: 4, 10]. \\ \hline
-Perfil & \texttt{perfil} & VARCHAR & 20 & NOT NULL, CHECK & Papel de acesso: 'CLIENTE', 'PRODUTOR' ou 'ORGANIZACAO'[cite: 4, 10]. \\ \hline
-Criação & \texttt{criado\_em} & TIMESTAMP & -- & DEFAULT NOW() & Data e hora de criação do registro no banco[cite: 4, 10]. \\ \hline
+
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador único gerado por \texttt{gen\_random\_uuid()}. \\ \hline
+
+Nome & \texttt{nome} & VARCHAR & 150 & NOT NULL & Nome civil completo ou razão social do feirante. \\ \hline
+
+E-mail & \texttt{email} & VARCHAR & 150 & NOT NULL, UK & Login único utilizado para emissão do JWT. \\ \hline
+
+Hash Senha & \texttt{senha\_hash} & VARCHAR & 255 & NOT NULL & Hash seguro criptografado via \textit{bcrypt} (RNF02). \\ \hline
+
+Telefone & \texttt{telefone} & VARCHAR & 20 & NULL / CHECK & Contato com DDD; obrigatório para perfil PRODUTOR. \\ \hline
+
+Perfil & \texttt{perfil} & VARCHAR & 20 & NOT NULL, CHECK & Papel de acesso: 'CLIENTE', 'PRODUTOR' ou 'ORGANIZACAO'. \\ \hline
+
+Criação & \texttt{criado\_em} & TIMESTAMP & -- & DEFAULT NOW() & Data e hora de criação do registro no banco. \\ \hline
+
 \end{tabularx}
+
 \end{spacing}
 
 \newpage
 
 % --- TABELA 5: PRODUTOS ---
+
 \begin{spacing}{1.0}
+
 \small
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+
 \hline
+
 \multicolumn{2}{|l|}{\textbf{ENTIDADE: Produto}} \\ \hline
-\textbf{Descrição:} & Catálogo de itens agrícolas e artesanais comercializados[cite: 4, 10]. \\ \hline
-\textbf{Nome da Tabela:} & \texttt{produtos}[cite: 4, 10] \\ \hline
-\textbf{Volume Esperado:} & $\approx$ 200 a 1.000 itens por edição de feira[cite: 10]. \\ \hline
-\textbf{Tempo de Retenção:} & Permanente para preservação do histórico de compras[cite: 10]. \\ \hline
-\textbf{Rotina de Limpeza:} & Desativação lógica (\textit{Soft Delete}, \texttt{ativo = FALSE})[cite: 4, 10]. \\ \hline
+
+\textbf{Descrição:} & Catálogo de itens agrícolas e artesanais comercializados. \\ \hline
+
+\textbf{Nome da Tabela:} & \texttt{produtos} \\ \hline
+
+\textbf{Volume Esperado:} & $\approx$ 200 a 1.000 itens por edição de feira. \\ \hline
+
+\textbf{Tempo de Retenção:} & Permanente para preservação do histórico de compras. \\ \hline
+
+\textbf{Rotina de Limpeza:} & Desativação lógica (\textit{Soft Delete}, \texttt{ativo = FALSE}). \\ \hline
+
 \end{tabularx}
 
 \vspace{0.25cm}
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+
 \hline
+
 \multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{produtos}}} \\ \hline
+
 \textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
-Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal único do produto[cite: 4, 10]. \\ \hline
-Produtor & \texttt{produtor\_id} & UUID & 36 & FK, NOT NULL & Vínculo com \texttt{usuarios(id)} para isolamento de itens[cite: 4, 10]. \\ \hline
-Nome & \texttt{nome} & VARCHAR & 100 & NOT NULL & Denominação comercial do item agrícola ofertado[cite: 4, 10]. \\ \hline
-Descrição & \texttt{descricao} & TEXT & -- & NULL & Detalhes sobre cultivo, apresentação e características[cite: 4, 10]. \\ \hline
-Preço & \texttt{preco} & DECIMAL & 10,2 & NOT NULL, CHECK & Valor unitário oficial de venda ($\ge 0$)[cite: 4, 10]. \\ \hline
-Unidade & \texttt{unidade\_medida} & VARCHAR & 20 & NOT NULL & Unidade padrão de venda (ex: 'kg', 'maço')[cite: 4, 10]. \\ \hline
-Ativo & \texttt{ativo} & BOOLEAN & 1 & DEFAULT TRUE & Flag que controla a visibilidade no catálogo semanal[cite: 4, 10]. \\ \hline
+
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal único do produto. \\ \hline
+
+Produtor & \texttt{produtor\_id} & UUID & 36 & FK, NOT NULL & Vínculo com \texttt{usuarios(id)} para isolamento de itens. \\ \hline
+
+Nome & \texttt{nome} & VARCHAR & 100 & NOT NULL & Denominação comercial do item agrícola ofertado. \\ \hline
+
+Descrição & \texttt{descricao} & TEXT & -- & NULL & Detalhes sobre cultivo, apresentação e características. \\ \hline
+
+Preço & \texttt{preco} & DECIMAL & 10,2 & NOT NULL, CHECK & Valor unitário oficial de venda ($\geq 0$). \\ \hline
+
+Unidade & \texttt{unidade\_medida} & VARCHAR & 20 & NOT NULL & Unidade padrão de venda (ex.: 'kg', 'maço'). \\ \hline
+
+Ativo & \texttt{ativo} & BOOLEAN & 1 & DEFAULT TRUE & Flag que controla a visibilidade no catálogo semanal. \\ \hline
+
 \end{tabularx}
+
 \end{spacing}
 
 \vspace{0.6cm}
 
 % --- TABELAS 6 E 7: EDIÇÕES DA FEIRA E PONTOS DE RETIRADA ---
+
 \begin{spacing}{1.0}
+
 \small
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+
 \hline
+
 \multicolumn{2}{|l|}{\textbf{ENTIDADE: Edição da Feira}} \\ \hline
-\textbf{Descrição:} & Ciclos temporais de realização das feiras presenciais[cite: 4, 10]. \\ \hline
-\textbf{Nome da Tabela:} & \texttt{edicoes\_feira}[cite: 4, 10] \\ \hline
-\textbf{Volume Esperado:} & $\approx$ 50 registros por ano de operação[cite: 10]. \\ \hline
-\textbf{Tempo de Retenção:} & 5 anos para histórico e auditoria[cite: 10]. \\ \hline
-\textbf{Rotina de Limpeza:} & Arquivamento anual de edições encerradas[cite: 10]. \\ \hline
+
+\textbf{Descrição:} & Ciclos temporais de realização das feiras presenciais. \\ \hline
+
+\textbf{Nome da Tabela:} & \texttt{edicoes\_feira} \\ \hline
+
+\textbf{Volume Esperado:} & $\approx$ 50 registros por ano de operação. \\ \hline
+
+\textbf{Tempo de Retenção:} & 5 anos para histórico e auditoria. \\ \hline
+
+\textbf{Rotina de Limpeza:} & Arquivamento anual de edições encerradas. \\ \hline
+
 \end{tabularx}
 
 \vspace{0.25cm}
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+
 \hline
+
 \multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{edicoes\_feira}}} \\ \hline
+
 \textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
-Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal da edição[cite: 4, 10]. \\ \hline
-Nome Edição & \texttt{nome\_identificador} & VARCHAR & 100 & NOT NULL & Rótulo descritivo do evento (ex: 'Semana 42 - 2026')[cite: 4, 10]. \\ \hline
-Ativa & \texttt{ativa} & BOOLEAN & 1 & DEFAULT FALSE & Define se a feira está aberta para pedidos (RN01)[cite: 4, 10]. \\ \hline
+
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal da edição. \\ \hline
+
+Nome Edição & \texttt{nome\_identificador} & VARCHAR & 100 & NOT NULL & Rótulo descritivo do evento (ex.: 'Semana 42 - 2026'). \\ \hline
+
+Ativa & \texttt{ativa} & BOOLEAN & 1 & DEFAULT FALSE & Define se a feira está aberta para pedidos (RN01). \\ \hline
+
 \end{tabularx}
 
 \vspace{0.6cm}
 
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+
 \hline
+
 \multicolumn{2}{|l|}{\textbf{ENTIDADE: Ponto de Retirada}} \\ \hline
-\textbf{Descrição:} & Locais físicos para recolhimento presencial das encomendas[cite: 4, 10]. \\ \hline
-\textbf{Nome da Tabela:} & \texttt{pontos\_retirada}[cite: 4, 10] \\ \hline
-\textbf{Volume Esperado:} & $\approx$ 5 a 20 pontos cadastrados[cite: 10]. \\ \hline
-\textbf{Tempo de Retenção:} & Permanente[cite: 10]. \\ \hline
-\textbf{Rotina de Limpeza:} & Manutenção manual conforme logística da feira[cite: 10]. \\ \hline
+
+\textbf{Descrição:} & Locais físicos para recolhimento presencial das encomendas. \\ \hline
+
+\textbf{Nome da Tabela:} & \texttt{pontos\_retirada} \\ \hline
+
+\textbf{Volume Esperado:} & $\approx$ 5 a 20 pontos cadastrados. \\ \hline
+
+\textbf{Tempo de Retenção:} & Permanente. \\ \hline
+
+\textbf{Rotina de Limpeza:} & Manutenção manual conforme logística da feira. \\ \hline
+
 \end{tabularx}
 
 \vspace{0.25cm}
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+
 \hline
+
 \multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{pontos\_retirada}}} \\ \hline
+
 \textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
-Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do ponto de logística[cite: 4, 10]. \\ \hline
-Nome & \texttt{nome} & VARCHAR & 150 & NOT NULL & Nome do ponto físico (ex: 'Tenda Principal')[cite: 4, 10]. \\ \hline
-Endereço & \texttt{endereco} & TEXT & -- & NOT NULL & Logradouro completo com referências de retirada[cite: 4, 10]. \\ \hline
+
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do ponto de logística. \\ \hline
+
+Nome & \texttt{nome} & VARCHAR & 150 & NOT NULL & Nome do ponto físico (ex.: 'Tenda Principal'). \\ \hline
+
+Endereço & \texttt{endereco} & TEXT & -- & NOT NULL & Logradouro completo com referências de retirada. \\ \hline
+
 \end{tabularx}
+
 \end{spacing}
 
 \newpage
 
 % --- TABELA 8: PEDIDOS ---
+
 \begin{spacing}{1.0}
+
 \small
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+
 \hline
+
 \multicolumn{2}{|l|}{\textbf{ENTIDADE: Pedido}} \\ \hline
-\textbf{Descrição:} & Intenções de compra confirmadas pelos clientes na feira[cite: 4, 10]. \\ \hline
-\textbf{Nome da Tabela:} & \texttt{pedidos}[cite: 4, 10] \\ \hline
-\textbf{Volume Esperado:} & $\approx$ 500 a 5.000 pedidos por mês[cite: 10]. \\ \hline
-\textbf{Tempo de Retenção:} & 2 anos para histórico e conciliação de vendas[cite: 10]. \\ \hline
-\textbf{Rotina de Limpeza:} & Consolidação periódica em base analítica[cite: 10]. \\ \hline
+
+\textbf{Descrição:} & Intenções de compra confirmadas pelos clientes na feira. \\ \hline
+
+\textbf{Nome da Tabela:} & \texttt{pedidos} \\ \hline
+
+\textbf{Volume Esperado:} & $\approx$ 500 a 5.000 pedidos por mês. \\ \hline
+
+\textbf{Tempo de Retenção:} & 2 anos para histórico e conciliação de vendas. \\ \hline
+
+\textbf{Rotina de Limpeza:} & Consolidação periódica em base analítica. \\ \hline
+
 \end{tabularx}
 
 \vspace{0.25cm}
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+
 \hline
+
 \multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{pedidos}}} \\ \hline
+
 \textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
-Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do pedido[cite: 4, 10]. \\ \hline
-Cliente & \texttt{cliente\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o comprador em \texttt{usuarios(id)}[cite: 4, 10]. \\ \hline
-Edição & \texttt{edicao\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o evento em \texttt{edicoes\_feira(id)}[cite: 4, 10]. \\ \hline
-Ponto Retirada & \texttt{ponto\_retirada\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o local em \texttt{pontos\_retirada(id)}[cite: 4, 10]. \\ \hline
-Comprovante & \texttt{comprovante\_codigo} & VARCHAR & 20 & NOT NULL, UK & Código único gerado para conferência (RN03)[cite: 4, 10]. \\ \hline
-Status & \texttt{status} & VARCHAR & 30 & NOT NULL, CHECK & 'RECEBIDO', 'EM\_PREPARACAO' ou 'ENTREGUE'[cite: 4, 10]. \\ \hline
-Valor Total & \texttt{valor\_total} & DECIMAL & 10,2 & NOT NULL & Montante financeiro total calculado no back-end[cite: 4, 10]. \\ \hline
-Criação & \texttt{criado\_em} & TIMESTAMP & -- & DEFAULT NOW() & Data e hora do fechamento da solicitação[cite: 4, 10]. \\ \hline
+
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do pedido. \\ \hline
+
+Cliente & \texttt{cliente\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o comprador em \texttt{usuarios(id)}. \\ \hline
+
+Edição & \texttt{edicao\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o evento em \texttt{edicoes\_feira(id)}. \\ \hline
+
+Ponto Retirada & \texttt{ponto\_retirada\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o local em \texttt{pontos\_retirada(id)}. \\ \hline
+
+Comprovante & \texttt{comprovante\_codigo} & VARCHAR & 20 & NOT NULL, UK & Código único gerado para conferência (RN03). \\ \hline
+
+Status & \texttt{status} & VARCHAR & 30 & NOT NULL, CHECK & 'RECEBIDO', 'EM\_PREPARACAO' ou 'ENTREGUE'. \\ \hline
+
+Valor Total & \texttt{valor\_total} & DECIMAL & 10,2 & NOT NULL & Montante financeiro total calculado no back-end. \\ \hline
+
+Criação & \texttt{criado\_em} & TIMESTAMP & -- & DEFAULT NOW() & Data e hora do fechamento da solicitação. \\ \hline
+
 \end{tabularx}
+
 \end{spacing}
 
 \vspace{0.6cm}
 
 % --- TABELAS 9 E 10: ITENS DO PEDIDO E NOTIFICAÇÕES ---
+
 \begin{spacing}{1.0}
+
 \small
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+
 \hline
+
 \multicolumn{2}{|l|}{\textbf{ENTIDADE: Item do Pedido}} \\ \hline
-\textbf{Descrição:} & Detalhamento dos produtos e valores congelados na compra[cite: 4, 10]. \\ \hline
-\textbf{Nome da Tabela:} & \texttt{itens\_pedido}[cite: 4, 10] \\ \hline
-\textbf{Volume Esperado:} & $\approx$ 2.000 a 20.000 itens processados mensalmente[cite: 10]. \\ \hline
-\textbf{Tempo de Retenção:} & 2 anos, estritamente atrelado ao pedido pai[cite: 10]. \\ \hline
-\textbf{Rotina de Limpeza:} & Exclusão em cascata (\textit{ON DELETE CASCADE})[cite: 4, 10]. \\ \hline
+
+\textbf{Descrição:} & Detalhamento dos produtos e valores congelados na compra. \\ \hline
+
+\textbf{Nome da Tabela:} & \texttt{itens\_pedido} \\ \hline
+
+\textbf{Volume Esperado:} & $\approx$ 2.000 a 20.000 itens processados mensalmente. \\ \hline
+
+\textbf{Tempo de Retenção:} & 2 anos, estritamente atrelado ao pedido pai. \\ \hline
+
+\textbf{Rotina de Limpeza:} & Exclusão em cascata (\textit{ON DELETE CASCADE}). \\ \hline
+
 \end{tabularx}
 
 \vspace{0.25cm}
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+
 \hline
+
 \multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{itens\_pedido}}} \\ \hline
+
 \textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
-Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do item do pedido[cite: 4, 10]. \\ \hline
-Pedido & \texttt{pedido\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o pedido pai em \texttt{pedidos(id)}[cite: 4, 10]. \\ \hline
-Produto & \texttt{produto\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o catálogo em \texttt{produtos(id)}[cite: 4, 10]. \\ \hline
-Quantidade & \texttt{quantidade} & INTEGER & 4 & NOT NULL, CHECK & Volume demandado pelo comprador ($> 0$)[cite: 4, 10]. \\ \hline
-Preço Unitário & \texttt{preco\_unitario} & DECIMAL & 10,2 & NOT NULL & Preço unitário congelado no fechamento da compra[cite: 4, 10]. \\ \hline
+
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do item do pedido. \\ \hline
+
+Pedido & \texttt{pedido\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o pedido pai em \texttt{pedidos(id)}. \\ \hline
+
+Produto & \texttt{produto\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o catálogo em \texttt{produtos(id)}. \\ \hline
+
+Quantidade & \texttt{quantidade} & INTEGER & 4 & NOT NULL, CHECK & Volume demandado pelo comprador ($> 0$). \\ \hline
+
+Preço Unitário & \texttt{preco\_unitario} & DECIMAL & 10,2 & NOT NULL & Preço unitário congelado no fechamento da compra. \\ \hline
+
 \end{tabularx}
 
 \vspace{0.6cm}
 
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{3.0cm}|X|}
+
 \hline
+
 \multicolumn{2}{|l|}{\textbf{ENTIDADE: Notificação}} \\ \hline
-\textbf{Descrição:} & Alertas internos aos feirantes sobre novos pedidos[cite: 4, 10]. \\ \hline
-\textbf{Nome da Tabela:} & \texttt{notificacoes}[cite: 4, 10] \\ \hline
-\textbf{Volume Esperado:} & $\approx$ 1.000 a 5.000 alertas gerados por mês[cite: 10]. \\ \hline
-\textbf{Tempo de Retenção:} & 6 meses a partir da data de leitura[cite: 10]. \\ \hline
-\textbf{Rotina de Limpeza:} & Expulgo periódico de alertas lidos com mais de 90 dias[cite: 10]. \\ \hline
+
+\textbf{Descrição:} & Alertas internos aos feirantes sobre novos pedidos. \\ \hline
+
+\textbf{Nome da Tabela:} & \texttt{notificacoes} \\ \hline
+
+\textbf{Volume Esperado:} & $\approx$ 1.000 a 5.000 alertas gerados por mês. \\ \hline
+
+\textbf{Tempo de Retenção:} & 6 meses a partir da data de leitura. \\ \hline
+
+\textbf{Rotina de Limpeza:} & Expurgo periódico de alertas lidos com mais de 90 dias. \\ \hline
+
 \end{tabularx}
 
 \vspace{0.25cm}
+
 \noindent
+
 \begin{tabularx}{\textwidth}{|p{1.6cm}|p{1.9cm}|p{1.2cm}|p{0.7cm}|p{1.9cm}|X|}
+
 \hline
+
 \multicolumn{6}{|l|}{\textbf{ATRIBUTOS: \texttt{notificacoes}}} \\ \hline
+
 \textbf{Atributo} & \textbf{Nome Campo} & \textbf{Tipo} & \textbf{Tam.} & \textbf{Restrição} & \textbf{Descrição} \\ \hline
-Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do alerta[cite: 4, 10]. \\ \hline
-Produtor & \texttt{produtor\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o feirante em \texttt{usuarios(id)} (RN04)[cite: 4, 10]. \\ \hline
-Pedido & \texttt{pedido\_id} & UUID & 36 & FK, NOT NULL & Vínculo com a encomenda em \texttt{pedidos(id)}[cite: 4, 10]. \\ \hline
-Mensagem & \texttt{mensagem} & TEXT & -- & NOT NULL & Resumo dos itens e quantidades encomendadas[cite: 4, 10]. \\ \hline
-Lida & \texttt{lida} & BOOLEAN & 1 & DEFAULT FALSE & Flag de controle de pendências no painel[cite: 4, 10]. \\ \hline
+
+Identificador & \texttt{id} & UUID & 36 & PK, NOT NULL & Identificador universal do alerta. \\ \hline
+
+Produtor & \texttt{produtor\_id} & UUID & 36 & FK, NOT NULL & Vínculo com o feirante em \texttt{usuarios(id)} (RN04). \\ \hline
+
+Pedido & \texttt{pedido\_id} & UUID & 36 & FK, NOT NULL & Vínculo com a encomenda em \texttt{pedidos(id)}. \\ \hline
+
+Mensagem & \texttt{mensagem} & TEXT & -- & NOT NULL & Resumo dos itens e quantidades encomendadas. \\ \hline
+
+Lida & \texttt{lida} & BOOLEAN & 1 & DEFAULT FALSE & Flag de controle de pendências no painel. \\ \hline
+
 \end{tabularx}
+
 \end{spacing}
 
 \newpage
@@ -775,37 +1250,47 @@ Lida & \texttt{lida} & BOOLEAN & 1 & DEFAULT FALSE & Flag de controle de pendên
 % ------------------------------------------------------------------------------
 % 8. DESCRIÇÃO DAS ATIVIDADES PRÁTICAS NA ETAPA
 % ------------------------------------------------------------------------------
+
 \section{Descrição das Atividades Práticas na Etapa}
 
-O desenvolvimento do projeto apoiou-se em um conjunto de ferramentas integradas cobrindo todo o ciclo de vida do software[cite: 10, 12]:
+O desenvolvimento do projeto apoiou-se em um conjunto de ferramentas integradas cobrindo todo o ciclo de vida do software:
 
 \subsection{Trello}
-O Trello é uma ferramenta para a execução de projetos baseada no método Kanban[cite: 10, 12]. Seu layout é formado por quadros que possibilitam inserir cartões com informações sobre as tarefas a realizar, em andamento, em revisão e concluídas[cite: 10, 12]. Permite controle rigoroso do prazo de entrega e visualização integrada do backlog de funcionalidades (FEAT-01 a FEAT-07)[cite: 7, 10, 12].
+
+O Trello é uma ferramenta para a execução de projetos baseada no método Kanban. Seu layout é formado por quadros que possibilitam inserir cartões com informações sobre as tarefas a realizar, em andamento, em revisão e concluídas. Permite controle rigoroso do prazo de entrega e visualização integrada do backlog de funcionalidades (FEAT-01 a FEAT-07).
 
 \subsection{Figma}
-Plataforma de design vetorial baseada em nuvem utilizada para a concepção de interfaces de usuário (UI), experiência do usuário (UX) e prototipagem colaborativa[cite: 10, 12]. Permitiu a construção de layouts responsivos otimizados para smartphones (\textit{Mobile-First}), simulando os fluxos de catálogo, carrinho, checkout e relatórios[cite: 10, 12].
+
+Plataforma de design vetorial baseada em nuvem utilizada para a concepção de interfaces de usuário (UI), experiência do usuário (UX) e prototipagem colaborativa. Permitiu a construção de layouts responsivos otimizados para smartphones (\textit{Mobile-First}), simulando os fluxos de catálogo, carrinho, checkout e relatórios.
 
 \subsection{Astah / Mermaid.js}
-Ferramentas consolidadas para modelagem visual e representação de diagramas sob o padrão UML (Casos de Uso, Classes de Domínio e Atividades) e Modelo Entidade-Relacionamento (DER), garantindo padronização e documentação clara dos artefatos conceituais[cite: 10, 12].
+
+Ferramentas consolidadas para modelagem visual e representação de diagramas sob o padrão UML (Casos de Uso, Classes de Domínio e Atividades) e Modelo Entidade-Relacionamento (DER), garantindo padronização e documentação clara dos artefatos conceituais.
 
 \subsection{Git e GitHub}
-O Git é um sistema de controle de versão distribuído utilizado no terminal Linux para rastrear o histórico de modificações atômicas no código-fonte (\textit{commits} semânticos e ramificações por \textit{feature})[cite: 10, 12]. O GitHub atuou como repositório remoto centralizado para armazenamento e colaboração entre os desenvolvedores[cite: 10, 12].
+
+O Git é um sistema de controle de versão distribuído utilizado no terminal Linux para rastrear o histórico de modificações atômicas no código-fonte (\textit{commits} semânticos e ramificações por \textit{feature}). O GitHub atuou como repositório remoto centralizado para armazenamento e colaboração entre os desenvolvedores.
 
 \subsection{PostgreSQL e Utilitário psql}
-SGBD relacional de alto desempenho executado nativamente em ambiente Debian Linux na porta 5432[cite: 6, 10, 12]. Utilizou-se o utilitário de terminal \texttt{psql} para execução direta das migrações de esquema (\textit{migrations}) e inserção dos dados de teste (\textit{seeds}) sem dependência de intermediadores gráficos pesados[cite: 4, 10, 12].
+
+SGBD relacional de alto desempenho executado nativamente em ambiente Debian Linux na porta 5432. Utilizou-se o utilitário de terminal \texttt{psql} para execução direta das migrações de esquema (\textit{migrations}) e inserção dos dados de teste (\textit{seeds}) sem dependência de intermediadores gráficos pesados.
 
 \newpage
 
 % ------------------------------------------------------------------------------
 % 9. ÓRGÃOS ENVOLVIDOS
 % ------------------------------------------------------------------------------
+
 \section{Órgãos Envolvidos}
 
-A execução do presente projeto técnico envolve exclusivamente as seguintes entidades e agentes[cite: 10, 12]:
+A execução do presente projeto técnico envolve exclusivamente as seguintes entidades e agentes:
 
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Centro de Educação Tecnológica do Amazonas -- CETAM:} Entidade pública estadual de educação profissional, responsável pelo suporte institucional, supervisão técnico-pedagógica através da \varEscola\ e avaliação curricular[cite: 10, 12].
-    \item \textbf{Equipe de Estudantes Desenvolvedores:} Formada pelos alunos \varEstudanteUm, \varEstudanteDois\ e \varEstudanteTres, responsáveis pelo levantamento de requisitos, modelagem de dados, desenvolvimento do código-fonte, testes integrados e documentação técnica[cite: 10, 12].
+
+    \item \textbf{Centro de Educação Tecnológica do Amazonas -- CETAM:} Entidade pública estadual de educação profissional, responsável pelo suporte institucional, supervisão técnico-pedagógica através da \varEscola\ e avaliação curricular.
+
+    \item \textbf{Equipe de Estudantes Desenvolvedores:} Formada pelos alunos \varEstudanteUm, \varEstudanteDois\ e \varEstudanteTres, responsáveis pelo levantamento de requisitos, modelagem de dados, desenvolvimento do código-fonte, testes integrados e documentação técnica.
+
 \end{itemize}
 
 \newpage
@@ -813,17 +1298,25 @@ A execução do presente projeto técnico envolve exclusivamente as seguintes en
 % ------------------------------------------------------------------------------
 % 10. MECANISMOS E NORMAS DE EXECUÇÃO
 % ------------------------------------------------------------------------------
+
 \section{Mecanismos e Normas de Execução}
 
 \subsection{Privacidade e Proteção de Dados (LGPD)}
-Em alinhamento à Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018), o sistema implementa o princípio da coleta mínima: solicitam-se apenas nome, e-mail para autenticação e telefone para contato via WhatsApp[cite: 4, 9, 10, 12]. Não há captura nem retenção de dados bancários ou documentos sensíveis[cite: 1, 10, 12].
+
+Em alinhamento à Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018), o sistema implementa o princípio da coleta mínima: solicitam-se apenas nome, e-mail para autenticação e telefone para contato via WhatsApp. Não há captura nem retenção de dados bancários ou documentos sensíveis.
 
 \subsection{Segurança e Simplificações do MVP}
-Para a versão de MVP executada em ambiente de testes local no Debian Linux, foram adotadas decisões técnicas proporcionais[cite: 6, 9, 10, 12]:
+
+Para a versão de MVP executada em ambiente de testes local no Debian Linux, foram adotadas decisões técnicas proporcionais:
+
 \begin{itemize}[leftmargin=1.5cm]
-    \item As senhas são protegidas com o algoritmo criptográfico \textit{bcrypt} e as consultas SQL são blindadas contra injeção de código via parâmetros posicionais (\$1, \$2) no driver \texttt{pg}[cite: 3, 4, 9, 10].
-    \item \textbf{Armazenamento de JWT em \texttt{localStorage} (Risco Aceito):} Facilita o controle de sessão sem ferramentas de compilação (\textit{Zero-Build})[cite: 5, 9, 10]. Em ambiente público de produção com movimentação financeira, recomenda-se a migração para cookies protegidos com as flags \texttt{HttpOnly} e \texttt{Secure}[cite: 9, 10].
-    \item \textbf{Execução em Host Único Bare-Metal (Risco Aceito):} O servidor Node.js e o PostgreSQL rodam nativamente na mesma máquina comunicando-se via loopback local[cite: 6, 9, 10]. Essa decisão elimina o overhead de orquestradores de contêineres, sendo adequada para a avaliação acadêmica[cite: 6, 9, 10].
+
+    \item As senhas são protegidas com o algoritmo criptográfico \textit{bcrypt} e as consultas SQL são blindadas contra injeção de código via parâmetros posicionais (\$1, \$2) no driver \texttt{pg}.
+
+    \item \textbf{Armazenamento de JWT em \texttt{localStorage} (Risco Aceito):} Facilita o controle de sessão sem ferramentas de compilação (\textit{Zero-Build}). Em ambiente público de produção com movimentação financeira, recomenda-se a migração para cookies protegidos com as flags \texttt{HttpOnly} e \texttt{Secure}.
+
+    \item \textbf{Execução em Host Único Bare-Metal (Risco Aceito):} O servidor Node.js e o PostgreSQL rodam nativamente na mesma máquina comunicando-se via loopback local. Essa decisão elimina o overhead de orquestradores de contêineres, sendo adequada para a avaliação acadêmica.
+
 \end{itemize}
 
 \newpage
@@ -831,28 +1324,47 @@ Para a versão de MVP executada em ambiente de testes local no Debian Linux, for
 % ------------------------------------------------------------------------------
 % 11. ORÇAMENTO
 % ------------------------------------------------------------------------------
+
 \section{Orçamento}
 
-Pela utilização exclusiva de tecnologias abertas, software livre e execução em ambiente computacional pré-existente dos estudantes, os custos diretos limitam-se a despesas de material de consumo para apresentação acadêmica[cite: 10, 12]:
+Pela utilização exclusiva de tecnologias abertas, software livre e execução em ambiente computacional pré-existente dos estudantes, os custos diretos limitam-se a despesas de material de consumo para apresentação acadêmica:
 
 \begin{table}[h!]
+
 \centering
+
 \begin{spacing}{1.15}
+
 \begin{tabular}{|c|p{7.5cm}|c|c|c|c|}
+
 \hline
+
 \textbf{Nº} & \textbf{Descrição} & \textbf{Unid.} & \textbf{Qtd.} & \textbf{V. Unit. (R\$)} & \textbf{Total (R\$)} \\ \hline
+
 \multicolumn{6}{|l|}{\textbf{Material de Expediente e Impressão}} \\ \hline
+
 1 & Impressão da Documentação Técnica Final & Folha & 30 & 0,50 & 15,00 \\ \hline
+
 2 & Encadernação em Espiral com Capa Plástica & Unid. & 1 & 10,00 & 10,00 \\ \hline
+
 3 & Papel Sulfite A4 para Rascunhos e Validação & Pacote & 1 & 10,00 & 10,00 \\ \hline
+
 \multicolumn{5}{|r|}{\textbf{Subtotal Material:}} & 35,00 \\ \hline
+
 \multicolumn{6}{|l|}{\textbf{Infraestrutura e Licenças de Software}} \\ \hline
+
 1 & Licenças de Software (Node.js, PostgreSQL, VS Code) & -- & -- & 0,00 & 0,00 \\ \hline
+
 2 & Ambiente de Hospedagem (Host Único Debian Linux) & -- & -- & 0,00 & 0,00 \\ \hline
+
 \multicolumn{5}{|r|}{\textbf{Subtotal Software:}} & 0,00 \\ \hline
+
 \multicolumn{5}{|r|}{\textbf{Valor Total do Projeto (R\$):}} & \textbf{35,00} \\ \hline
+
 \end{tabular}
+
 \end{spacing}
+
 \end{table}
 
 \newpage
@@ -860,45 +1372,77 @@ Pela utilização exclusiva de tecnologias abertas, software livre e execução 
 % ------------------------------------------------------------------------------
 % 12. CRONOGRAMA
 % ------------------------------------------------------------------------------
+
 \section{Cronograma}
 
 \subsection{Fases de Execução}
-A distribuição temporal do projeto ocorreu em 5 blocos sequenciais de 3 dias[cite: 10]:
+
+A distribuição temporal do projeto ocorreu em 5 blocos sequenciais de 3 dias:
 
 \vspace{0.3cm}
+
 \noindent
+
 \begin{spacing}{1.15}
+
 \begin{tabular}{|p{8.5cm}|c|c|c|c|c|}
+
 \hline
+
 \textbf{Fases de Execução} & \textbf{D 1-3} & \textbf{D 4-6} & \textbf{D 7-9} & \textbf{D 10-12} & \textbf{D 13-15} \\ \hline
-Fase 1: Levantamento de Requisitos e Modelagem DER & X &  &  &  &  \\ \hline
-Fase 2: Prototipação de Interfaces e Planejamento &  & X &  &  &  \\ \hline
-Fase 3: Implementação do Back-end e Banco de Dados &  &  & X &  &  \\ \hline
-Fase 4: Implementação do Front-end e Integração &  &  &  & X &  \\ \hline
-Fase 5: Testes Integrados, Documentação e Apresentação &  &  &  &  & X \\ \hline
+
+Fase 1: Levantamento de Requisitos e Modelagem DER & X & & & & \\ \hline
+
+Fase 2: Prototipação de Interfaces e Planejamento & & X & & & \\ \hline
+
+Fase 3: Implementação do Back-end e Banco de Dados & & & X & & \\ \hline
+
+Fase 4: Implementação do Front-end e Integração & & & & X & \\ \hline
+
+Fase 5: Testes Integrados, Documentação e Apresentação & & & & & X \\ \hline
+
 \end{tabular}
+
 \end{spacing}
 
 \subsection{Cronograma de Atividades}
-O cronograma operacional detalha as atividades desenvolvidas ao longo das duas semanas de trabalho[cite: 10, 12]:
+
+O cronograma operacional detalha as atividades desenvolvidas ao longo das duas semanas de trabalho:
 
 \begin{table}[h!]
+
 \centering
+
 \begin{spacing}{1.15}
+
 \begin{tabular}{|p{7.5cm}|c|c|c|c|c|}
+
 \hline
+
 \textbf{Atividades Previstas} & \textbf{D 1-3} & \textbf{D 4-6} & \textbf{D 7-9} & \textbf{D 10-12} & \textbf{D 13-15} \\ \hline
-Levantamento de Requisitos e Elaboração do DER & X &  &  &  &  \\ \hline
-Modelagem Entidade-Relacionamento do Banco & X &  &  &  &  \\ \hline
-Criação dos Protótipos de Interface (Figma) &  & X &  &  &  \\ \hline
-Configuração do Ambiente e Estruturação do Banco &  & X &  &  &  \\ \hline
-Desenvolvimento das Rotas e API (Node.js/Express) &  &  & X &  &  \\ \hline
-Desenvolvimento do Front-end (HTML5/CSS3/JS) &  &  &  & X &  \\ \hline
-Integração Front-end / Back-end e Validação &  &  &  & X &  \\ \hline
-Bateria de Testes Funcionais do MVP &  &  &  &  & X \\ \hline
-Consolidação do Relatório Técnico e Apresentação &  &  &  &  & X \\ \hline
+
+Levantamento de Requisitos e Elaboração do DER & X & & & & \\ \hline
+
+Modelagem Entidade-Relacionamento do Banco & X & & & & \\ \hline
+
+Criação dos Protótipos de Interface (Figma) & & X & & & \\ \hline
+
+Configuração do Ambiente e Estruturação do Banco & & X & & & \\ \hline
+
+Desenvolvimento das Rotas e API (Node.js/Express) & & & X & & \\ \hline
+
+Desenvolvimento do Front-end (HTML5/CSS3/JS) & & & & X & \\ \hline
+
+Integração Front-end / Back-end e Validação & & & & X & \\ \hline
+
+Bateria de Testes Funcionais do MVP & & & & & X \\ \hline
+
+Consolidação do Relatório Técnico e Apresentação & & & & & X \\ \hline
+
 \end{tabular}
+
 \end{spacing}
+
 \end{table}
 
 \newpage
@@ -906,43 +1450,59 @@ Consolidação do Relatório Técnico e Apresentação &  &  &  &  & X \\ \hline
 % ------------------------------------------------------------------------------
 % 13. REFERÊNCIAS
 % ------------------------------------------------------------------------------
+
 \section{Referências}
 
-\noindent ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. \textbf{NBR 6023}: Informação e documentação -- Referências -- Elaboração. Rio de Janeiro: ABNT, 2018[cite: 10].
+\noindent ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. \textbf{NBR 6023}: Informação e documentação -- Referências -- Elaboração. Rio de Janeiro: ABNT, 2018.
 
 \vspace{0.5cm}
-\noindent BRASIL. \textbf{Lei nº 13.709, de 14 de agosto de 2018}. Lei Geral de Proteção de Dados Pessoais (LGPD). Brasília, DF: Presidência da República, 2018[cite: 10].
+
+\noindent BRASIL. \textbf{Lei nº 13.709, de 14 de agosto de 2018}. Lei Geral de Proteção de Dados Pessoais (LGPD). Brasília, DF: Presidência da República, 2018.
 
 \vspace{0.5cm}
-\noindent CENTRO DE EDUCAÇÃO TECNOLÓGICA DO AMAZONAS (CETAM). \textbf{Orientações Metodológicas para Elaboração de Relatórios Técnicos e Prática Profissional}. Manaus: CETAM, 2026[cite: 10].
+
+\noindent CENTRO DE EDUCAÇÃO TECNOLÓGICA DO AMAZONAS (CETAM). \textbf{Orientações Metodológicas para Elaboração de Relatórios Técnicos e Prática Profissional}. Manaus: CETAM, 2026.
 
 \vspace{0.5cm}
-\noindent ELMASRI, Ramez; NAVATHE, Shamkant B. \textbf{Sistemas de Banco de Dados}. 7. ed. São Paulo: Pearson, 2018[cite: 10].
+
+\noindent ELMASRI, Ramez; NAVATHE, Shamkant B. \textbf{Sistemas de Banco de Dados}. 7. ed. São Paulo: Pearson, 2018.
 
 \vspace{0.5cm}
-\noindent PRESSMAN, Roger S.; MAXIM, Bruce R. \textbf{Engenharia de Software}: uma abordagem profissional. 8. ed. Porto Alegre: AMGH, 2016[cite: 10].
+
+\noindent PRESSMAN, Roger S.; MAXIM, Bruce R. \textbf{Engenharia de Software}: uma abordagem profissional. 8. ed. Porto Alegre: AMGH, 2016.
 
 \vspace{0.5cm}
-\noindent POSTGRESQL GLOBAL DEVELOPMENT GROUP. \textbf{PostgreSQL 15 Documentation}. 2023. Disponível em: \textless https://www.postgresql.org/docs/ \textgreater. Acesso em: 15 fev. 2026[cite: 10].
+
+\noindent POSTGRESQL GLOBAL DEVELOPMENT GROUP. \textbf{PostgreSQL 15 Documentation}. 2023. Disponível em: \textless https://www.postgresql.org/docs/\textgreater. Acesso em: 15 fev. 2026.
 
 \newpage
 
 % ------------------------------------------------------------------------------
 % APÊNDICE
 % ------------------------------------------------------------------------------
+
 \section*{Apêndice}
+
 \addcontentsline{toc}{section}{Apêndice}
 
-\noindent \textbf{Apêndice A -- Relação de Telas Mapeadas para Prototipação}[cite: 10]
+\noindent \textbf{Apêndice A -- Relação de Telas Mapeadas para Prototipação}
 
 \begin{itemize}[leftmargin=1.5cm]
-    \item \textbf{Tela 01:} Autenticação e Cadastro (Produtor e Cliente)[cite: 10];
-    \item \textbf{Tela 02:} Catálogo Público de Produtos da Edição da Feira[cite: 10];
-    \item \textbf{Tela 03:} Carrinho de Compras e Seleção de Quantidades[cite: 10];
-    \item \textbf{Tela 04:} Confirmação de Pedido e Emissão de Comprovante de Retirada[cite: 10];
-    \item \textbf{Tela 05:} Painel Administrativo do Produtor (Gestão de Itens e Preços)[cite: 10];
-    \item \textbf{Tela 06:} Painel de Controle de Status dos Pedidos Recebidos[cite: 10];
-    \item \textbf{Tela 07:} Relatório Analítico Consolidado de Vendas por Feirante[cite: 10].
+
+    \item \textbf{Tela 01:} Autenticação e Cadastro (Produtor e Cliente);
+
+    \item \textbf{Tela 02:} Catálogo Público de Produtos da Edição da Feira;
+
+    \item \textbf{Tela 03:} Carrinho de Compras e Seleção de Quantidades;
+
+    \item \textbf{Tela 04:} Confirmação de Pedido e Emissão de Comprovante de Retirada;
+
+    \item \textbf{Tela 05:} Painel Administrativo do Produtor (Gestão de Itens e Preços);
+
+    \item \textbf{Tela 06:} Painel de Controle de Status dos Pedidos Recebidos;
+
+    \item \textbf{Tela 07:} Relatório Analítico Consolidado de Vendas por Feirante.
+
 \end{itemize}
 
 \newpage
@@ -950,12 +1510,15 @@ Consolidação do Relatório Técnico e Apresentação &  &  &  &  & X \\ \hline
 % ------------------------------------------------------------------------------
 % ANEXO
 % ------------------------------------------------------------------------------
+
 \section*{Anexo}
+
 \addcontentsline{toc}{section}{Anexo}
 
-\noindent \textbf{Anexo A -- Termo de Referência do Sistema Web (Extrato Pedagógico)}[cite: 10, 12]
+\noindent \textbf{Anexo A -- Termo de Referência do Sistema Web (Extrato Pedagógico)}
 
 \vspace{0.5cm}
-\noindent Documento de especificação curricular e diretrizes pedagógicas fornecido pela Coordenação do Curso Técnico em Desenvolvimento de Sistemas da Escola de Educação Profissional Galiléia / CETAM para balizamento do projeto prático supervisionado[cite: 10, 12].
+
+\noindent Documento de especificação curricular e diretrizes pedagógicas fornecido pela Coordenação do Curso Técnico em Desenvolvimento de Sistemas da Escola de Educação Profissional Galiléia / CETAM para balizamento do projeto prático supervisionado.
 
 \end{document}
