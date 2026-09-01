@@ -1,0 +1,12 @@
+/* frontend/css/variables.css */
+:root {
+  --cor-primaria: #2E7D32;
+  --cor-primaria-hover: #1B5E20;
+  --cor-secundaria: #F9A825;
+  --cor-fundo: #F4F6F8;
+  --cor-card: #FFFFFF;
+  --cor-texto: #333333;
+  --cor-erro: #D32F2F;
+  --cor-borda: #E0E0E0;
+  --fonte-padrao: system-ui, -apple-system, sans-serif;
+}
