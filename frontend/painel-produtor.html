@@ -1,0 +1,232 @@
+<!-- frontend/painel-produtor.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Produtor - Sisfeira</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .header { background-color: var(--cor-primaria); color: white; padding: 15px 0; }
+    .header .container { display: flex; justify-content: space-between; align-items: center; }
+    
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin: 30px 0 20px; }
+    
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+    th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--cor-borda); }
+    th { background-color: #f8f9fa; font-weight: 500; }
+    
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+    .modal { background: white; padding: 30px; border-radius: 8px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal-active { display: flex; }
+    
+    .btn-sm { padding: 5px 10px; font-size: 14px; }
+    .btn-danger { background-color: var(--cor-erro); color: white; }
+    .btn-danger:hover { background-color: #b71c1c; }
+    .btn-secondary { background-color: #757575; color: white; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <h2>Painel do Produtor</h2>
+      <div>
+        <span id="userName" style="margin-right: 15px;"></span>
+        <button class="btn btn-secondary btn-sm" onclick="encerrarSessao()">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="panel-header">
+      <h3>Meus Produtos</h3>
+      <button class="btn btn-primary" onclick="abrirModal()">+ Novo Produto</button>
+    </div>
+
+    <div id="alertMessage" class="alert"></div>
+
+    <div class="table-responsive card" style="padding: 0;">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Preço (R$)</th>
+            <th>Unidade</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaProdutos">
+          <tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Modal Formulário Produto -->
+  <div id="produtoModal" class="modal-overlay">
+    <div class="modal">
+      <h3 id="modalTitle" style="margin-bottom: 20px;">Novo Produto</h3>
+      <div id="modalAlert" class="alert"></div>
+      
+      <form id="formProduto">
+        <input type="hidden" id="prodId">
+        
+        <div class="form-group">
+          <label for="prodNome">Nome do Produto</label>
+          <input type="text" id="prodNome" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="prodDescricao">Descrição</label>
+          <textarea id="prodDescricao" class="form-control" rows="3"></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 15px;">
+          <div class="form-group" style="flex: 1;">
+            <label for="prodPreco">Preço (R$)</label>
+            <input type="number" id="prodPreco" class="form-control" step="0.01" min="0" required>
+          </div>
+          
+          <div class="form-group" style="flex: 1;">
+            <label for="prodUnidade">Unidade de Medida</label>
+            <select id="prodUnidade" class="form-control" required>
+              <option value="KG">Quilo (KG)</option>
+              <option value="UNIDADE">Unidade</option>
+              <option value="MAÇO">Maço</option>
+              <option value="LITRO">Litro</option>
+              <option value="PALMA">Palma</option>
+              <option value="PACOTE">Pacote</option>
+              <option value="BANDEJA">Bandeja</option>
+            </select>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;" id="btnSalvar">Salvar</button>
+          <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="fecharModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    if (!verificarAutenticacaoProtegida(['PRODUTOR'])) {
+      throw new Error("Acesso bloqueado");
+    }
+
+    const sessao = obterSessao();
+    document.getElementById('userName').textContent = sessao.usuario.nome;
+    let produtosData = [];
+
+    function showMessage(msg, isError = true, containerId = 'alertMessage') {
+      const alertDiv = document.getElementById(containerId);
+      alertDiv.textContent = msg;
+      alertDiv.className = isError ? 'alert alert-error' : 'alert alert-success';
+      alertDiv.style.display = 'block';
+      setTimeout(() => alertDiv.style.display = 'none', 5000);
+    }
+
+    function abrirModal(produto = null) {
+      document.getElementById('modalAlert').style.display = 'none';
+      document.getElementById('produtoModal').classList.add('modal-active');
+      
+      if (produto) {
+        document.getElementById('modalTitle').textContent = 'Editar Produto';
+        document.getElementById('prodId').value = produto.id;
+        document.getElementById('prodNome').value = produto.nome;
+        document.getElementById('prodDescricao').value = produto.descricao || '';
+        document.getElementById('prodPreco').value = produto.preco;
+        document.getElementById('prodUnidade').value = produto.unidade_medida;
+      } else {
+        document.getElementById('modalTitle').textContent = 'Novo Produto';
+        document.getElementById('formProduto').reset();
+        document.getElementById('prodId').value = '';
+      }
+    }
+
+    function fecharModal() {
+      document.getElementById('produtoModal').classList.remove('modal-active');
+    }
+
+    async function carregarProdutos() {
+      try {
+        produtosData = await apiFetch('/produtos/produtor');
+        const tbody = document.getElementById('tabelaProdutos');
+        tbody.innerHTML = '';
+        
+        if(produtosData.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum produto cadastrado.</td></tr>';
+          return;
+        }
+
+        produtosData.forEach(p => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${escapeHTML(p.nome)}</strong></td>
+            <td>R$ ${p.preco.toFixed(2)}</td>
+            <td>${escapeHTML(p.unidade_medida)}</td>
+            <td>${p.ativo ? '<span style="color:var(--cor-primaria)">Ativo</span>' : 'Inativo'}</td>
+            <td>
+              <button class="btn btn-primary btn-sm" onclick='abrirModal(${JSON.stringify(p).replace(/'/g, "&#39;")})'>Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="excluirProduto('${p.id}')">Excluir</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        showMessage('Erro ao carregar seus produtos.', true);
+      }
+    }
+
+    document.getElementById('formProduto').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btnSalvar = document.getElementById('btnSalvar');
+      btnSalvar.classList.add('btn-loading');
+
+      const id = document.getElementById('prodId').value;
+      const payload = {
+        nome: document.getElementById('prodNome').value,
+        descricao: document.getElementById('prodDescricao').value,
+        preco: parseFloat(document.getElementById('prodPreco').value),
+        unidade_medida: document.getElementById('prodUnidade').value
+      };
+
+      try {
+        if (id) {
+          await apiFetch(`/produtos/${id}`, { method: 'PUT', body: payload });
+          showMessage('Produto atualizado com sucesso!', false);
+        } else {
+          await apiFetch('/produtos', { method: 'POST', body: payload });
+          showMessage('Produto criado com sucesso!', false);
+        }
+        fecharModal();
+        carregarProdutos();
+      } catch (error) {
+        showMessage(error.mensagem || 'Erro ao salvar produto.', true, 'modalAlert');
+      } finally {
+        btnSalvar.classList.remove('btn-loading');
+      }
+    });
+
+    async function excluirProduto(id) {
+      if (!confirm('Tem certeza que deseja excluir este produto?')) return;
+      
+      try {
+        await apiFetch(`/produtos/${id}`, { method: 'DELETE' });
+        showMessage('Produto excluído com sucesso.', false);
+        carregarProdutos();
+      } catch (error) {
+        showMessage(error.mensagem || 'Erro ao excluir produto.', true);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarProdutos);
+  </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sisfeira - Feira Digital</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .header { background-color: var(--cor-primaria); color: white; padding: 15px 0; }
+    .header .container { display: flex; justify-content: space-between; align-items: center; }
+    .header a { color: white; text-decoration: none; margin-left: 15px; font-weight: 500; }
+    
+    .banner { background-color: var(--cor-secundaria); padding: 30px; border-radius: 8px; margin: 20px 0; text-align: center; color: #333; }
+    
+    .search-bar { margin-bottom: 30px; }
+    .search-bar input { padding: 12px; font-size: 16px; border-radius: 20px; border: 1px solid var(--cor-borda); width: 100%; max-width: 500px; }
+    
+    .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .product-card { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+    .product-price { font-size: 1.25rem; font-weight: bold; color: var(--cor-primaria); margin: 10px 0; }
+    .product-producer { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <h1>Sisfeira</h1>
+      <nav id="nav-menu">
+        <!-- Renderizado via JS -->
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="banner">
+      <h2>Bem-vindo à Feira Digital</h2>
+      <p>Apoie os produtores locais. Produtos frescos direto para você!</p>
+    </div>
+
+    <div class="search-bar" style="text-align: center;">
+      <input type="text" id="searchInput" placeholder="Buscar produtos ou produtores...">
+    </div>
+
+    <div id="catalogGrid" class="catalog-grid">
+      <!-- Cards renderizados aqui -->
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let produtosCache = [];
+
+    function renderNav() {
+      const sessao = obterSessao();
+      const nav = document.getElementById('nav-menu');
+      if (sessao) {
+        nav.innerHTML = `
+          <span>Olá, ${escapeHTML(sessao.usuario.nome)}</span>
+          ${sessao.usuario.perfil === 'PRODUTOR' ? '<a href="/painel-produtor.html">Meu Painel</a>' : ''}
+          <a href="#" onclick="encerrarSessao(); return false;">Sair</a>
+        `;
+      } else {
+        nav.innerHTML = `
+          <a href="/login.html">Entrar / Criar Conta</a>
+        `;
+      }
+    }
+
+    function renderizarProdutos(produtos) {
+      const grid = document.getElementById('catalogGrid');
+      grid.innerHTML = '';
+
+      if (produtos.length === 0) {
+        grid.innerHTML = '<p>Nenhum produto encontrado.</p>';
+        return;
+      }
+
+      produtos.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card product-card';
+        card.innerHTML = `
+          <div>
+            <h3>${escapeHTML(p.nome)}</h3>
+            <div class="product-producer">Por: ${escapeHTML(p.produtor_nome)}</div>
+            <p>${p.descricao ? escapeHTML(p.descricao) : 'Sem descrição'}</p>
+          </div>
+          <div>
+            <div class="product-price">R$ ${p.preco.toFixed(2)} / ${escapeHTML(p.unidade_medida)}</div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="adicionarAoPedido('${p.id}')">Adicionar ao Pedido</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function carregarCatalogo() {
+      try {
+        produtosCache = await apiFetch('/catalogo');
+        renderizarProdutos(produtosCache);
+      } catch (error) {
+        document.getElementById('catalogGrid').innerHTML = '<p class="alert alert-error" style="display:block">Erro ao carregar o catálogo.</p>';
+      }
+    }
+
+    function adicionarAoPedido(id) {
+      const sessao = obterSessao();
+      if (!sessao) {
+        window.location.href = '/login.html';
+        return;
+      }
+      alert('Produto adicionado ao pedido! (Implementação futura)');
+    }
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const termo = e.target.value.toLowerCase();
+      const filtrados = produtosCache.filter(p => 
+        p.nome.toLowerCase().includes(termo) || 
+        p.produtor_nome.toLowerCase().includes(termo)
+      );
+      renderizarProdutos(filtrados);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderNav();
+      carregarCatalogo();
+    });
+  </script>
+</body>
+</html>

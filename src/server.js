@@ -7,6 +7,7 @@ const pool = require('./config/db');
 const errorHandler = require('./middlewares/error.middleware');
 const asyncHandler = require('./middlewares/async.middleware');
 const authRoutes = require('./modules/auth/auth.routes');
+const catalogRoutes = require('./modules/catalog/catalog.routes');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.get('/api/health', asyncHandler(async (req, res) => {
 }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api', catalogRoutes);
 
 app.use(errorHandler);
 
