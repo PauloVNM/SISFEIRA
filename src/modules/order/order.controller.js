@@ -21,6 +21,24 @@ class OrderController {
     const comprovante = await orderService.obterComprovante(id, usuarioId, perfil);
     res.status(200).json(comprovante);
   });
+
+  listarHistorico = asyncHandler(async (req, res) => {
+    const historico = await orderService.listarHistoricoCliente(req.user.id);
+    res.status(200).json(historico);
+  });
+
+  listarPedidosProdutor = asyncHandler(async (req, res) => {
+    const pedidos = await orderService.listarPedidosProdutor(req.user.id);
+    res.status(200).json(pedidos);
+  });
+
+  atualizarStatus = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const produtorId = req.user.id;
+    const { status } = req.body;
+    const resultado = await orderService.atualizarStatusPedido(id, produtorId, status);
+    res.status(200).json(resultado);
+  });
 }
 
 module.exports = new OrderController();

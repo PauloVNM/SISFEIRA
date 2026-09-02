@@ -62,7 +62,7 @@
       if (sessao) {
         html += `
           <span style="margin-left: 15px;">Olá, ${escapeHTML(sessao.usuario.nome)}</span>
-          ${sessao.usuario.perfil === 'PRODUTOR' ? '<a href="/painel-produtor.html">Meu Painel</a>' : ''}
+          ${sessao.usuario.perfil === 'PRODUTOR' ? '<a href="/painel-produtor.html">Meu Painel</a>' : '<a href="/historico.html">Meus Pedidos</a>'}
           <a href="#" onclick="encerrarSessao(); return false;">Sair</a>
         `;
       } else {

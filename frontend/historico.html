@@ -1,0 +1,126 @@
+<!-- frontend/historico.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Pedidos - Sisfeira</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .header { background-color: var(--cor-primaria); color: white; padding: 15px 0; }
+    .header .container { display: flex; justify-content: space-between; align-items: center; }
+    .header a { color: white; text-decoration: none; margin-left: 15px; font-weight: 500; }
+    .btn-carrinho { font-weight: bold; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 4px; }
+    
+    .history-container { margin-top: 30px; }
+    
+    .order-card { background: white; border: 1px solid var(--cor-borda); border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; }
+    @media (min-width: 768px) {
+      .order-card { flex-direction: row; justify-content: space-between; align-items: center; }
+    }
+    
+    .order-info h3 { margin: 0 0 10px 0; color: var(--cor-primaria); }
+    .order-info p { margin: 5px 0; color: #555; }
+    
+    .badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+    .status-RECEBIDO { background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2; }
+    .status-EM_PREPARACAO { background: #E3F2FD; color: #1565C0; border: 1px solid #BBDEFB; }
+    .status-ENTREGUE { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+    
+    .order-actions { text-align: right; }
+    .order-total { font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 10px; }
+    
+    .empty-state { text-align: center; padding: 50px 20px; background: white; border-radius: 8px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <h1><a href="index.html" style="margin-left: 0;">Sisfeira</a></h1>
+      <nav id="nav-menu">
+        <a href="index.html">Catálogo</a>
+        <a href="carrinho.html" class="btn-carrinho">Carrinho (<span class="cart-count">0</span>)</a>
+        <a href="#" onclick="encerrarSessao(); return false;">Sair</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container history-container">
+    <h2>Meus Pedidos</h2>
+    
+    <div id="historicoLista">
+      <p style="text-align: center; margin-top: 20px;">Carregando histórico...</p>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    if (!verificarAutenticacaoProtegida(['CLIENTE'])) {
+      throw new Error("Acesso bloqueado");
+    }
+
+    function formatarData(isoString) {
+      const data = new Date(isoString);
+      return data.toLocaleString('pt-BR');
+    }
+
+    async function carregarHistorico() {
+      const container = document.getElementById('historicoLista');
+      
+      try {
+        const historico = await apiFetch('/pedidos/historico');
+        
+        if (historico.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h3>Você ainda não realizou nenhum pedido.</h3>
+              <p style="margin: 15px 0 25px; color: #666;">Apoie os produtores locais e faça sua primeira compra.</p>
+              <a href="index.html" class="btn btn-primary">Ir para o Catálogo</a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = '';
+        historico.forEach(pedido => {
+          const div = document.createElement('div');
+          div.className = 'order-card';
+          
+          div.innerHTML = `
+            <div class="order-info">
+              <h3>Pedido ${escapeHTML(pedido.comprovante_codigo)}</h3>
+              <p><strong>Data:</strong> ${formatarData(pedido.criado_em)}</p>
+              <p><strong>Local de Retirada:</strong> ${escapeHTML(pedido.ponto_nome)}</p>
+              <p style="font-size: 0.9rem; color: #777;">${escapeHTML(pedido.ponto_endereco)}</p>
+              <div style="margin-top: 10px;">
+                <span class="badge status-${pedido.status}">${escapeHTML(pedido.status)}</span>
+              </div>
+            </div>
+            <div class="order-actions">
+              <div class="order-total">Total: R$ ${pedido.valor_total.toFixed(2)}</div>
+              <a href="comprovante.html?id=${pedido.id}" class="btn btn-secondary" style="background-color: var(--cor-secundaria); color: #333;">Ver Comprovante</a>
+            </div>
+          `;
+          
+          container.appendChild(div);
+        });
+      } catch (error) {
+        container.innerHTML = `
+          <div class="alert alert-error" style="display:block;">
+            ${error.mensagem || 'Erro ao carregar o histórico de pedidos.'}
+          </div>
+        `;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      atualizarBadgeCarrinho();
+      carregarHistorico();
+    });
+  </script>
+</body>
+</html>

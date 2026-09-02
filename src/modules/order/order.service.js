@@ -104,6 +104,73 @@ class OrderService {
     
     return comprovante;
   }
+
+  async listarHistoricoCliente(clienteId) {
+    const historico = await orderRepository.listarPorCliente(clienteId);
+    return historico.map(p => ({
+      ...p,
+      valor_total: Number(p.valor_total)
+    }));
+  }
+
+  async listarPedidosProdutor(produtorId) {
+    const pedidos = await orderRepository.listarPorProdutor(produtorId);
+    
+    for (const pedido of pedidos) {
+      pedido.valor_total = Number(pedido.valor_total);
+      pedido.itens = await orderRepository.buscarItensDoProdutorNoPedido(pedido.id, produtorId);
+    }
+    
+    return pedidos;
+  }
+
+  async atualizarStatusPedido(pedidoId, produtorId, novoStatus) {
+    const statusValidos = ['RECEBIDO', 'EM_PREPARACAO', 'ENTREGUE'];
+    if (!statusValidos.includes(novoStatus)) {
+      const error = new Error('Status inválido');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const pedido = await orderRepository.buscarStatusAtual(pedidoId);
+    if (!pedido) {
+      const error = new Error('Pedido não encontrado');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const pertence = await orderRepository.verificarProdutorPertenceAoPedido(pedidoId, produtorId);
+    if (!pertence) {
+      const error = new Error('Acesso não autorizado para alterar este pedido');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const statusAtual = pedido.status;
+    if (statusAtual === 'RECEBIDO' && novoStatus !== 'EM_PREPARACAO') {
+      const error = new Error('Transição inválida: pedidos recebidos só podem avançar para EM_PREPARACAO');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (statusAtual === 'EM_PREPARACAO' && novoStatus !== 'ENTREGUE') {
+      const error = new Error('Transição inválida: pedidos em preparação só podem avançar para ENTREGUE');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (statusAtual === 'ENTREGUE') {
+      const error = new Error('Transição inválida: pedido já se encontra finalizado como ENTREGUE');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const atualizado = await orderRepository.atualizarStatus(pedidoId, novoStatus);
+    
+    return { 
+      sucesso: true, 
+      mensagem: `Status do pedido alterado para ${novoStatus} com sucesso.`,
+      status: atualizado.status
+    };
+  }
 }
 
 module.exports = new OrderService();

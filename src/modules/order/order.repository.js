@@ -112,6 +112,75 @@ class OrderRepository {
 
     return pedido;
   }
+
+  async listarPorCliente(clienteId) {
+    const query = `
+      SELECT p.id, p.comprovante_codigo, p.status, p.valor_total, p.criado_em,
+             pr.nome AS ponto_nome, pr.endereco AS ponto_endereco
+      FROM pedidos p
+      JOIN pontos_retirada pr ON p.ponto_retirada_id = pr.id
+      WHERE p.cliente_id = $1
+      ORDER BY p.criado_em DESC;
+    `;
+    const result = await pool.query(query, [clienteId]);
+    return result.rows;
+  }
+
+  async listarPorProdutor(produtorId) {
+    const query = `
+      SELECT DISTINCT p.id, p.comprovante_codigo, p.status, p.valor_total, p.criado_em,
+             pr.nome AS ponto_nome,
+             u_cli.nome AS cliente_nome, u_cli.telefone AS cliente_telefone
+      FROM pedidos p
+      JOIN pontos_retirada pr ON p.ponto_retirada_id = pr.id
+      JOIN usuarios u_cli ON p.cliente_id = u_cli.id
+      JOIN itens_pedido ip ON p.id = ip.pedido_id
+      JOIN produtos prod ON ip.produto_id = prod.id
+      WHERE prod.produtor_id = $1
+      ORDER BY p.criado_em DESC;
+    `;
+    const result = await pool.query(query, [produtorId]);
+    return result.rows;
+  }
+
+  async buscarItensDoProdutorNoPedido(pedidoId, produtorId) {
+    const query = `
+      SELECT ip.quantidade, ip.preco_unitario, prod.nome AS produto_nome
+      FROM itens_pedido ip
+      JOIN produtos prod ON ip.produto_id = prod.id
+      WHERE ip.pedido_id = $1 AND prod.produtor_id = $2;
+    `;
+    const result = await pool.query(query, [pedidoId, produtorId]);
+    return result.rows;
+  }
+
+  async verificarProdutorPertenceAoPedido(pedidoId, produtorId) {
+    const query = `
+      SELECT 1 FROM itens_pedido ip
+      JOIN produtos prod ON ip.produto_id = prod.id
+      WHERE ip.pedido_id = $1 AND prod.produtor_id = $2
+      LIMIT 1;
+    `;
+    const result = await pool.query(query, [pedidoId, produtorId]);
+    return result.rows.length > 0;
+  }
+
+  async buscarStatusAtual(pedidoId) {
+    const query = `SELECT id, status, comprovante_codigo FROM pedidos WHERE id = $1;`;
+    const result = await pool.query(query, [pedidoId]);
+    return result.rows[0];
+  }
+
+  async atualizarStatus(pedidoId, novoStatus) {
+    const query = `
+      UPDATE pedidos 
+      SET status = $1 
+      WHERE id = $2 
+      RETURNING id, status, comprovante_codigo;
+    `;
+    const result = await pool.query(query, [novoStatus, pedidoId]);
+    return result.rows[0];
+  }
 }
 
 module.exports = new OrderRepository();

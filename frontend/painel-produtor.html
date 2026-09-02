@@ -36,7 +36,17 @@
     .notif-card { border: 1px solid var(--cor-borda); padding: 15px; margin-bottom: 10px; border-radius: 4px; background-color: white; }
     .notif-card.unread { border-left: 4px solid var(--cor-secundaria); background-color: #fffdf5; }
     .notif-meta { font-size: 0.85rem; color: #666; margin-top: 5px; }
-  </style>
+
+    .btn-success { background-color: #2E7D32; color: white; }
+    .btn-success:hover { background-color: #1B5E20; }
+    
+    .order-prod-card { border: 1px solid var(--cor-borda); background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .order-prod-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+    .order-prod-items { margin-bottom: 15px; }
+    .order-prod-items ul { list-style-type: none; padding: 0; }
+    .order-prod-items li { padding: 5px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; }
+    .order-prod-actions { text-align: right; }
+</style>
 </head>
 <body>
 
@@ -62,7 +72,15 @@
       <div id="notificacoes-lista">Carregando...</div>
     </div>
 
+    
+    <div id="secao-encomendas" class="card" style="margin-top: 20px;">
+      <h3 style="margin-bottom: 15px;">Gestão de Encomendas</h3>
+      <div id="alertEncomendas" class="alert"></div>
+      <div id="encomendas-lista">Carregando encomendas...</div>
+    </div>
+
     <div class="panel-header">
+
       <h3>Meus Produtos</h3>
       <button class="btn btn-primary" onclick="abrirModal()">+ Novo Produto</button>
     </div>
@@ -319,9 +337,81 @@
       }
     }
 
+    
+    /* ---------------- ENCOMENDAS ---------------- */
+    async function carregarEncomendas() {
+      const container = document.getElementById('encomendas-lista');
+      try {
+        const encomendas = await apiFetch('/pedidos/produtor');
+        container.innerHTML = '';
+        
+        if(encomendas.length === 0) {
+          container.innerHTML = '<p>Você ainda não tem encomendas.</p>';
+          return;
+        }
+
+        encomendas.forEach(enc => {
+          let itensHtml = '<ul>';
+          enc.itens.forEach(i => {
+            itensHtml += `<li><span>${i.quantidade}x ${escapeHTML(i.produto_nome)}</span></li>`;
+          });
+          itensHtml += '</ul>';
+
+          let actionHtml = '';
+          if (enc.status === 'RECEBIDO') {
+            actionHtml = `<button class="btn btn-primary btn-sm" onclick="alterarStatusPedido('${enc.id}', 'EM_PREPARACAO')">Iniciar Preparação</button>`;
+          } else if (enc.status === 'EM_PREPARACAO') {
+            actionHtml = `<button class="btn btn-success btn-sm" onclick="alterarStatusPedido('${enc.id}', 'ENTREGUE')">Marcar como Entregue</button>`;
+          } else if (enc.status === 'ENTREGUE') {
+            actionHtml = `<span style="color: #2E7D32; font-weight: bold;">Pedido Finalizado</span>`;
+          }
+
+          const div = document.createElement('div');
+          div.className = 'order-prod-card';
+          div.innerHTML = `
+            <div class="order-prod-header">
+              <div>
+                <h4 style="color: var(--cor-primaria); margin-bottom: 5px;">Pedido ${escapeHTML(enc.comprovante_codigo)}</h4>
+                <p style="font-size: 0.9rem; color: #555;">Data: ${new Date(enc.criado_em).toLocaleString('pt-BR')}</p>
+                <p style="font-size: 0.9rem; color: #555;">Cliente: ${escapeHTML(enc.cliente_nome)} (${escapeHTML(enc.cliente_telefone || 'Sem telefone')})</p>
+                <p style="font-size: 0.9rem; color: #555;">Retirada: ${escapeHTML(enc.ponto_nome)}</p>
+              </div>
+              <div>
+                <span class="badge" style="background: #eee; padding: 5px 10px; border-radius: 20px;">${escapeHTML(enc.status)}</span>
+              </div>
+            </div>
+            <div class="order-prod-items">
+              <strong>Itens a separar:</strong>
+              ${itensHtml}
+            </div>
+            <div class="order-prod-actions">
+              ${actionHtml}
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        container.innerHTML = '<p class="alert alert-error">Erro ao carregar encomendas.</p>';
+      }
+    }
+
+    async function alterarStatusPedido(pedidoId, novoStatus) {
+      try {
+        const response = await apiFetch(`/pedidos/${pedidoId}/status`, {
+          method: 'PATCH',
+          body: { status: novoStatus }
+        });
+        showMessage(response.mensagem, false, 'alertEncomendas');
+        carregarEncomendas();
+      } catch (error) {
+        showMessage(error.mensagem || 'Erro ao alterar status.', true, 'alertEncomendas');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       carregarProdutos();
       carregarNotificacoes();
+      carregarEncomendas(); // added
     });
   </script>
 </body>
