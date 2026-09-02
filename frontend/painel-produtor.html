@@ -1,4 +1,4 @@
-<!-- frontend/painel-produtor.html -->
+<!-- Atualização de: frontend/painel-produtor.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -46,13 +46,19 @@
     .order-prod-items ul { list-style-type: none; padding: 0; }
     .order-prod-items li { padding: 5px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; }
     .order-prod-actions { text-align: right; }
-</style>
+
+    .kpi-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
+    @media(min-width: 768px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
+    .kpi-card { background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--cor-borda); text-align: center; }
+    .kpi-card h4 { margin: 0 0 10px; color: #666; font-size: 1rem; }
+    .kpi-card .kpi-value { font-size: 2rem; font-weight: bold; color: var(--cor-primaria); }
+  </style>
 </head>
 <body>
 
   <header class="header">
     <div class="container">
-      <h2>Painel do Produtor</h2>
+      <h2><a href="index.html" style="color: white; text-decoration: none;">Painel do Produtor</a></h2>
       <div class="header-actions">
         <div class="notif-badge-container" onclick="toggleNotificacoes()">
           <span>Notificações</span>
@@ -72,36 +78,75 @@
       <div id="notificacoes-lista">Carregando...</div>
     </div>
 
-    
-    <div id="secao-encomendas" class="card" style="margin-top: 20px;">
-      <h3 style="margin-bottom: 15px;">Gestão de Encomendas</h3>
-      <div id="alertEncomendas" class="alert"></div>
-      <div id="encomendas-lista">Carregando encomendas...</div>
+    <div class="tab-nav" style="margin-top: 30px; margin-bottom: 20px;">
+      <button class="tab-btn active" id="tab-produtos" onclick="mostrarAba('produtos')">Meus Produtos</button>
+      <button class="tab-btn" id="tab-encomendas" onclick="mostrarAba('encomendas')">Gestão de Encomendas</button>
+      <button class="tab-btn" id="tab-relatorios" onclick="mostrarAba('relatorios')">Relatório de Vendas</button>
     </div>
 
-    <div class="panel-header">
-
-      <h3>Meus Produtos</h3>
-      <button class="btn btn-primary" onclick="abrirModal()">+ Novo Produto</button>
+    <!-- SEÇÃO PRODUTOS -->
+    <div id="secao-produtos">
+      <div class="panel-header">
+        <h3 style="margin: 0;">Meus Produtos</h3>
+        <button class="btn btn-primary" onclick="abrirModal()">+ Novo Produto</button>
+      </div>
+      <div id="alertMessage" class="alert"></div>
+      <div class="table-responsive card" style="padding: 0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Preço (R$)</th>
+              <th>Unidade</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaProdutos">
+            <tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <div id="alertMessage" class="alert"></div>
+    <!-- SEÇÃO ENCOMENDAS -->
+    <div id="secao-encomendas" style="display: none;">
+      <div class="card" style="margin-top: 20px;">
+        <h3 style="margin-bottom: 15px;">Gestão de Encomendas</h3>
+        <div id="alertEncomendas" class="alert"></div>
+        <div id="encomendas-lista">Carregando encomendas...</div>
+      </div>
+    </div>
 
-    <div class="table-responsive card" style="padding: 0;">
-      <table>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Preço (R$)</th>
-            <th>Unidade</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaProdutos">
-          <tr><td colspan="5" style="text-align:center;">Carregando...</td></tr>
-        </tbody>
-      </table>
+    <!-- SEÇÃO RELATÓRIOS -->
+    <div id="secao-relatorios" style="display: none;">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <h4>Total Faturado</h4>
+          <div class="kpi-value" id="kpi-faturado">R$ 0,00</div>
+        </div>
+        <div class="kpi-card">
+          <h4>Pedidos Atendidos</h4>
+          <div class="kpi-value" id="kpi-pedidos">0</div>
+        </div>
+      </div>
+      <div class="card table-responsive" style="padding: 0;">
+        <div style="padding: 20px; border-bottom: 1px solid var(--cor-borda);">
+          <h3 style="margin: 0;">Itens Mais Vendidos</h3>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Quantidade Vendida</th>
+              <th>Total Faturado pelo Item</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaRelatorios">
+            <tr><td colspan="3" style="text-align:center;">Carregando relatórios...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </main>
 
@@ -170,6 +215,23 @@
       alertDiv.className = isError ? 'alert alert-error' : 'alert alert-success';
       alertDiv.style.display = 'block';
       setTimeout(() => alertDiv.style.display = 'none', 5000);
+    }
+
+    function mostrarAba(aba) {
+      document.getElementById('secao-produtos').style.display = 'none';
+      document.getElementById('secao-encomendas').style.display = 'none';
+      document.getElementById('secao-relatorios').style.display = 'none';
+      
+      document.getElementById('tab-produtos').classList.remove('active');
+      document.getElementById('tab-encomendas').classList.remove('active');
+      document.getElementById('tab-relatorios').classList.remove('active');
+      
+      document.getElementById('secao-' + aba).style.display = 'block';
+      document.getElementById('tab-' + aba).classList.add('active');
+      
+      if (aba === 'relatorios') {
+        carregarRelatorios();
+      }
     }
 
     /* ---------------- PRODUTOS ---------------- */
@@ -337,7 +399,6 @@
       }
     }
 
-    
     /* ---------------- ENCOMENDAS ---------------- */
     async function carregarEncomendas() {
       const container = document.getElementById('encomendas-lista');
@@ -408,10 +469,41 @@
       }
     }
 
+    /* ---------------- RELATÓRIOS ---------------- */
+    async function carregarRelatorios() {
+      try {
+        const data = await apiFetch('/relatorios/vendas/produtor');
+        const formatadorMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        document.getElementById('kpi-faturado').textContent = formatadorMoeda.format(data.total_faturado);
+        document.getElementById('kpi-pedidos').textContent = data.total_pedidos;
+        
+        const tbody = document.getElementById('tabelaRelatorios');
+        tbody.innerHTML = '';
+        
+        if (data.itens_mais_vendidos.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhuma venda registrada até o momento</td></tr>';
+          return;
+        }
+        
+        data.itens_mais_vendidos.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${escapeHTML(item.produto_nome)}</strong></td>
+            <td>${item.quantidade_vendida}</td>
+            <td>${formatadorMoeda.format(item.subtotal)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        document.getElementById('tabelaRelatorios').innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--cor-erro);">Erro ao carregar relatórios</td></tr>`;
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       carregarProdutos();
       carregarNotificacoes();
-      carregarEncomendas(); // added
+      carregarEncomendas();
     });
   </script>
 </body>

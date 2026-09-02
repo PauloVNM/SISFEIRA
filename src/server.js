@@ -10,6 +10,7 @@ const authRoutes = require('./modules/auth/auth.routes');
 const catalogRoutes = require('./modules/catalog/catalog.routes');
 const orderRoutes = require('./modules/order/order.routes');
 const notificationRoutes = require('./modules/notification/notification.routes');
+const reportRoutes = require('./modules/report/report.routes');
 
 const app = express();
 
@@ -27,10 +28,12 @@ app.get('/api/health', asyncHandler(async (req, res) => {
   res.status(200).json({ status: 'UP', database: 'connected' });
 }));
 
+
 app.use('/api/auth', authRoutes);
 app.use('/api', catalogRoutes);
 app.use('/api', orderRoutes);
 app.use('/api/notificacoes', notificationRoutes);
+app.use('/api/relatorios', reportRoutes);
 
 app.use(errorHandler);
 
