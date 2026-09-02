@@ -21,13 +21,14 @@
     .product-card { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
     .product-price { font-size: 1.25rem; font-weight: bold; color: var(--cor-primaria); margin: 10px 0; }
     .product-producer { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+    .btn-carrinho { font-weight: bold; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 4px; }
   </style>
 </head>
 <body>
 
   <header class="header">
     <div class="container">
-      <h1>Sisfeira</h1>
+      <h1><a href="index.html" style="margin-left: 0;">Sisfeira</a></h1>
       <nav id="nav-menu">
         <!-- Renderizado via JS -->
       </nav>
@@ -51,23 +52,26 @@
 
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
   <script>
     let produtosCache = [];
 
     function renderNav() {
       const sessao = obterSessao();
-      const nav = document.getElementById('nav-menu');
+      let html = `<a href="carrinho.html" class="btn-carrinho">Carrinho (<span class="cart-count">0</span>)</a>`;
       if (sessao) {
-        nav.innerHTML = `
-          <span>Olá, ${escapeHTML(sessao.usuario.nome)}</span>
+        html += `
+          <span style="margin-left: 15px;">Olá, ${escapeHTML(sessao.usuario.nome)}</span>
           ${sessao.usuario.perfil === 'PRODUTOR' ? '<a href="/painel-produtor.html">Meu Painel</a>' : ''}
           <a href="#" onclick="encerrarSessao(); return false;">Sair</a>
         `;
       } else {
-        nav.innerHTML = `
+        html += `
           <a href="/login.html">Entrar / Criar Conta</a>
         `;
       }
+      document.getElementById('nav-menu').innerHTML = html;
+      atualizarBadgeCarrinho();
     }
 
     function renderizarProdutos(produtos) {
@@ -90,7 +94,7 @@
           </div>
           <div>
             <div class="product-price">R$ ${p.preco.toFixed(2)} / ${escapeHTML(p.unidade_medida)}</div>
-            <button class="btn btn-primary" style="width: 100%;" onclick="adicionarAoPedido('${p.id}')">Adicionar ao Pedido</button>
+            <button class="btn btn-primary" style="width: 100%;" id="btn-add-${p.id}" onclick="adicionarAoPedido('${p.id}')">Adicionar ao Pedido</button>
           </div>
         `;
         grid.appendChild(card);
@@ -107,12 +111,18 @@
     }
 
     function adicionarAoPedido(id) {
-      const sessao = obterSessao();
-      if (!sessao) {
-        window.location.href = '/login.html';
-        return;
+      const produto = produtosCache.find(p => p.id === id);
+      if (produto) {
+        adicionarAoCarrinho(produto);
+        const btn = document.getElementById(`btn-add-${id}`);
+        const textOriginal = btn.textContent;
+        btn.textContent = 'Adicionado!';
+        btn.style.backgroundColor = '#1B5E20';
+        setTimeout(() => {
+          btn.textContent = textOriginal;
+          btn.style.backgroundColor = 'var(--cor-primaria)';
+        }, 1500);
       }
-      alert('Produto adicionado ao pedido! (Implementação futura)');
     }
 
     document.getElementById('searchInput').addEventListener('input', (e) => {

@@ -1,0 +1,231 @@
+<!-- frontend/carrinho.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sisfeira - Carrinho</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .header { background-color: var(--cor-primaria); color: white; padding: 15px 0; }
+    .header .container { display: flex; justify-content: space-between; align-items: center; }
+    .header a { color: white; text-decoration: none; margin-left: 15px; font-weight: 500; }
+    .btn-carrinho { font-weight: bold; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 4px; }
+    
+    .cart-container { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
+    @media(min-width: 768px) {
+      .cart-container { flex-direction: row; }
+      .cart-items { flex: 2; }
+      .cart-summary { flex: 1; }
+    }
+    
+    .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cor-borda); padding: 15px 0; }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item-info { flex: 1; }
+    .cart-item-info h4 { margin: 0; font-size: 1.1rem; }
+    .cart-item-info p { margin: 5px 0 0; color: #666; font-size: 0.9rem; }
+    .cart-item-controls { display: flex; align-items: center; gap: 10px; }
+    .cart-item-controls input { width: 50px; text-align: center; padding: 5px; }
+    .cart-item-controls button { background: var(--cor-borda); border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
+    .cart-item-controls button:hover { background: #ccc; }
+    
+    .cart-summary { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: fit-content; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1rem; }
+    .summary-row.total { font-weight: bold; font-size: 1.3rem; color: var(--cor-primaria); border-top: 1px solid var(--cor-borda); padding-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <h1><a href="index.html" style="margin-left: 0;">Sisfeira</a></h1>
+      <nav id="nav-menu">
+        <!-- Renderizado via JS -->
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2 style="margin-top: 20px;">Seu Carrinho</h2>
+    <div id="alertMessage" class="alert"></div>
+
+    <div class="cart-container">
+      <div class="cart-items card" id="itens-carrinho">
+        <!-- Itens renderizados aqui -->
+      </div>
+      
+      <div class="cart-summary" id="resumo-pedido" style="display: none;">
+        <h3>Resumo do Pedido</h3>
+        <div class="summary-row" style="margin-top: 15px;">
+          <span>Subtotal</span>
+          <span id="resumo-subtotal">R$ 0.00</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span id="resumo-total">R$ 0.00</span>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+          <label for="ponto-retirada">Selecione o Ponto de Retirada</label>
+          <select id="ponto-retirada" class="form-control" required>
+            <option value="">Carregando pontos...</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="confirmarPedido()">Confirmar Pedido</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    function renderNav() {
+      const sessao = obterSessao();
+      let html = `<a href="carrinho.html" class="btn-carrinho">Carrinho (<span class="cart-count">0</span>)</a>`;
+      if (sessao) {
+        html += `
+          <span style="margin-left: 15px;">Olá, ${escapeHTML(sessao.usuario.nome)}</span>
+          ${sessao.usuario.perfil === 'PRODUTOR' ? '<a href="/painel-produtor.html">Meu Painel</a>' : ''}
+          <a href="#" onclick="encerrarSessao(); return false;">Sair</a>
+        `;
+      } else {
+        html += `
+          <a href="/login.html">Entrar / Criar Conta</a>
+        `;
+      }
+      document.getElementById('nav-menu').innerHTML = html;
+      atualizarBadgeCarrinho();
+    }
+
+    function renderizarCarrinho() {
+      const carrinho = obterCarrinho();
+      const containerItens = document.getElementById('itens-carrinho');
+      const containerResumo = document.getElementById('resumo-pedido');
+      
+      containerItens.innerHTML = '';
+      
+      if (carrinho.length === 0) {
+        containerItens.innerHTML = `
+          <p>Seu carrinho está vazio.</p>
+          <a href="index.html" class="btn btn-primary" style="margin-top: 15px;">Voltar ao Catálogo</a>
+        `;
+        containerResumo.style.display = 'none';
+        return;
+      }
+
+      containerResumo.style.display = 'block';
+
+      carrinho.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+          <div class="cart-item-info">
+            <h4>${escapeHTML(item.nome)}</h4>
+            <p>${escapeHTML(item.produtor_nome)} - R$ ${item.preco.toFixed(2)} / ${escapeHTML(item.unidade_medida)}</p>
+            <p><strong>Subtotal: R$ ${(item.preco * item.quantidade).toFixed(2)}</strong></p>
+          </div>
+          <div class="cart-item-controls">
+            <button onclick="alterarQtd('${item.id}', -1)">-</button>
+            <input type="number" value="${item.quantidade}" min="1" onchange="inputQtd('${item.id}', this.value)">
+            <button onclick="alterarQtd('${item.id}', 1)">+</button>
+            <button style="margin-left: 10px; background: var(--cor-erro); color: white;" onclick="removerDoCarrinhoUI('${item.id}')">X</button>
+          </div>
+        `;
+        containerItens.appendChild(div);
+      });
+
+      const total = calcularTotalCarrinho().toFixed(2);
+      document.getElementById('resumo-subtotal').textContent = `R$ ${total}`;
+      document.getElementById('resumo-total').textContent = `R$ ${total}`;
+    }
+
+    function alterarQtd(id, delta) {
+      const carrinho = obterCarrinho();
+      const item = carrinho.find(i => i.id === id);
+      if (item) {
+        atualizarQuantidade(id, item.quantidade + delta);
+        renderizarCarrinho();
+      }
+    }
+
+    function inputQtd(id, val) {
+      const novaQtd = parseInt(val, 10);
+      if (!isNaN(novaQtd)) {
+        atualizarQuantidade(id, novaQtd);
+        renderizarCarrinho();
+      }
+    }
+
+    function removerDoCarrinhoUI(id) {
+      removerDoCarrinho(id);
+      renderizarCarrinho();
+    }
+
+    async function carregarPontosRetirada() {
+      const select = document.getElementById('ponto-retirada');
+      try {
+        const pontos = await apiFetch('/pontos-retirada');
+        select.innerHTML = '<option value="">Selecione um ponto...</option>';
+        pontos.forEach(p => {
+          select.innerHTML += `<option value="${p.id}">${escapeHTML(p.nome)} - ${escapeHTML(p.endereco)}</option>`;
+        });
+        
+        const pontoSalvo = localStorage.getItem('sisfeira_ponto_retirada');
+        if (pontoSalvo) {
+          select.value = pontoSalvo;
+        }
+      } catch (error) {
+        select.innerHTML = '<option value="">Erro ao carregar pontos</option>';
+      }
+    }
+
+    function mostrarErro(msg) {
+      const alert = document.getElementById('alertMessage');
+      alert.textContent = msg;
+      alert.className = 'alert alert-error';
+      alert.style.display = 'block';
+      setTimeout(() => alert.style.display = 'none', 4000);
+    }
+
+    function confirmarPedido() {
+      const carrinho = obterCarrinho();
+      if (carrinho.length === 0) {
+        mostrarErro('Adicione itens ao carrinho antes de confirmar.');
+        return;
+      }
+
+      const pontoSelect = document.getElementById('ponto-retirada');
+      if (!pontoSelect.value) {
+        mostrarErro('Por favor, selecione um ponto de retirada.');
+        return;
+      }
+
+      localStorage.setItem('sisfeira_ponto_retirada', pontoSelect.value);
+
+      const sessao = obterSessao();
+      if (!sessao) {
+        alert('Você precisa estar logado para finalizar o pedido. Redirecionando...');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      if (sessao.usuario.perfil !== 'CLIENTE') {
+        mostrarErro('Apenas perfis de CLIENTE podem realizar pedidos.');
+        return;
+      }
+
+      alert('Preparando pedido para a próxima etapa (FEAT-04).');
+      // A integração da FEAT-04 consumirá os dados salvos para finalizar a compra
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderNav();
+      renderizarCarrinho();
+      carregarPontosRetirada();
+    });
+  </script>
+</body>
+</html>
