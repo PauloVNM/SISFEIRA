@@ -9,7 +9,13 @@
   <link rel="stylesheet" href="css/components.css">
   <style>
     .header { background-color: var(--cor-primaria); color: white; padding: 15px 0; }
-    .header .container { display: flex; justify-content: space-between; align-items: center; }
+    .header .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    
+    .header-actions { display: flex; align-items: center; gap: 20px; }
+    
+    .notif-badge-container { position: relative; cursor: pointer; display: flex; align-items: center; font-weight: 500; }
+    .notif-badge-container:hover { opacity: 0.8; }
+    .badge-notif { background: var(--cor-erro); color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; position: absolute; top: -10px; right: -15px; display: none; }
     
     .panel-header { display: flex; justify-content: space-between; align-items: center; margin: 30px 0 20px; }
     
@@ -26,6 +32,10 @@
     .btn-danger { background-color: var(--cor-erro); color: white; }
     .btn-danger:hover { background-color: #b71c1c; }
     .btn-secondary { background-color: #757575; color: white; }
+
+    .notif-card { border: 1px solid var(--cor-borda); padding: 15px; margin-bottom: 10px; border-radius: 4px; background-color: white; }
+    .notif-card.unread { border-left: 4px solid var(--cor-secundaria); background-color: #fffdf5; }
+    .notif-meta { font-size: 0.85rem; color: #666; margin-top: 5px; }
   </style>
 </head>
 <body>
@@ -33,14 +43,25 @@
   <header class="header">
     <div class="container">
       <h2>Painel do Produtor</h2>
-      <div>
-        <span id="userName" style="margin-right: 15px;"></span>
-        <button class="btn btn-secondary btn-sm" onclick="encerrarSessao()">Sair</button>
+      <div class="header-actions">
+        <div class="notif-badge-container" onclick="toggleNotificacoes()">
+          <span>Notificações</span>
+          <span id="notif-count" class="badge-notif">0</span>
+        </div>
+        <div>
+          <span id="userName" style="margin-right: 15px;"></span>
+          <button class="btn btn-secondary btn-sm" onclick="encerrarSessao()">Sair</button>
+        </div>
       </div>
     </div>
   </header>
 
   <main class="container">
+    <div id="secao-notificacoes" class="card" style="display: none; margin-top: 20px;">
+      <h3 style="margin-bottom: 15px;">Central de Notificações</h3>
+      <div id="notificacoes-lista">Carregando...</div>
+    </div>
+
     <div class="panel-header">
       <h3>Meus Produtos</h3>
       <button class="btn btn-primary" onclick="abrirModal()">+ Novo Produto</button>
@@ -66,7 +87,6 @@
     </div>
   </main>
 
-  <!-- Modal Formulário Produto -->
   <div id="produtoModal" class="modal-overlay">
     <div class="modal">
       <h3 id="modalTitle" style="margin-bottom: 20px;">Novo Produto</h3>
@@ -122,7 +142,9 @@
 
     const sessao = obterSessao();
     document.getElementById('userName').textContent = sessao.usuario.nome;
+    
     let produtosData = [];
+    let notificacoesData = [];
 
     function showMessage(msg, isError = true, containerId = 'alertMessage') {
       const alertDiv = document.getElementById(containerId);
@@ -132,6 +154,7 @@
       setTimeout(() => alertDiv.style.display = 'none', 5000);
     }
 
+    /* ---------------- PRODUTOS ---------------- */
     function abrirModal(produto = null) {
       document.getElementById('modalAlert').style.display = 'none';
       document.getElementById('produtoModal').classList.add('modal-active');
@@ -226,7 +249,80 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', carregarProdutos);
+    /* ---------------- NOTIFICAÇÕES ---------------- */
+    function toggleNotificacoes() {
+      const sec = document.getElementById('secao-notificacoes');
+      sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function carregarNotificacoes() {
+      try {
+        notificacoesData = await apiFetch('/notificacoes/produtor');
+        renderizarNotificacoes();
+      } catch (error) {
+        document.getElementById('notificacoes-lista').innerHTML = '<p class="alert alert-error">Erro ao carregar notificações.</p>';
+      }
+    }
+
+    function renderizarNotificacoes() {
+      const container = document.getElementById('notificacoes-lista');
+      const badge = document.getElementById('notif-count');
+      container.innerHTML = '';
+
+      if (!notificacoesData || notificacoesData.length === 0) {
+        container.innerHTML = '<p>Nenhuma notificação no momento.</p>';
+        badge.style.display = 'none';
+        return;
+      }
+
+      let naoLidas = 0;
+
+      notificacoesData.forEach(n => {
+        if (!n.lida) naoLidas++;
+
+        const div = document.createElement('div');
+        div.className = `notif-card ${n.lida ? '' : 'unread'}`;
+
+        const dataFormatada = new Date(n.data_pedido).toLocaleString('pt-BR');
+
+        div.innerHTML = `
+          <p><strong>${escapeHTML(n.mensagem)}</strong></p>
+          <p class="notif-meta">Pedido: ${escapeHTML(n.comprovante_codigo)} - ${dataFormatada}</p>
+          <div style="margin-top: 10px;">
+            ${n.lida 
+              ? '<span style="font-size: 0.85rem; color: #888;">Lida</span>' 
+              : `<button class="btn btn-primary btn-sm" onclick="marcarComoLida('${n.id}')">Marcar como lida</button>`
+            }
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      if (naoLidas > 0) {
+        badge.textContent = naoLidas;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    async function marcarComoLida(id) {
+      try {
+        await apiFetch(`/notificacoes/${id}/lida`, { method: 'PATCH' });
+        const notif = notificacoesData.find(n => n.id === id);
+        if (notif) {
+          notif.lida = true;
+        }
+        renderizarNotificacoes();
+      } catch (error) {
+        showMessage(error.mensagem || 'Erro ao marcar notificação como lida.', true);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarProdutos();
+      carregarNotificacoes();
+    });
   </script>
 </body>
 </html>
