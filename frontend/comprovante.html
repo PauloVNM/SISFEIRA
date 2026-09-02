@@ -1,0 +1,194 @@
+<!-- frontend/comprovante.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comprovante do Pedido - Sisfeira</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .header { background-color: var(--cor-primaria); color: white; padding: 15px 0; }
+    .header .container { display: flex; justify-content: space-between; align-items: center; }
+    .header a { color: white; text-decoration: none; font-weight: 500; }
+    
+    .receipt-container { max-width: 800px; margin: 30px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .receipt-header { text-align: center; border-bottom: 2px dashed var(--cor-borda); padding-bottom: 20px; margin-bottom: 20px; }
+    .receipt-header h2 { color: var(--cor-primaria); margin-bottom: 10px; }
+    .receipt-code { font-size: 1.5rem; font-weight: bold; font-family: monospace; letter-spacing: 2px; }
+    
+    .badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; background: var(--cor-secundaria); color: #333; margin-top: 10px; }
+    
+    .info-section { margin-bottom: 20px; }
+    .info-section h3 { font-size: 1.1rem; color: #555; border-bottom: 1px solid var(--cor-borda); padding-bottom: 5px; margin-bottom: 10px; }
+    
+    table.items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    table.items-table th, table.items-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+    table.items-table th { background: #f9f9f9; }
+    
+    .receipt-total { text-align: right; font-size: 1.4rem; font-weight: bold; color: var(--cor-primaria); margin-top: 20px; }
+    
+    .contact-card { background: #f4f6f8; padding: 15px; border-radius: 8px; margin-top: 20px; }
+    .btn-secondary { background-color: #25D366; color: white; display: inline-block; text-decoration: none; margin: 5px 0; }
+    .btn-secondary:hover { background-color: #128C7E; }
+    
+    .actions { display: flex; gap: 10px; justify-content: center; margin-top: 30px; }
+    
+    @media print {
+      body { background: white; }
+      .header, .actions, .contact-card { display: none !important; }
+      .receipt-container { box-shadow: none; margin: 0; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <h1><a href="index.html">Sisfeira</a></h1>
+      <nav id="nav-menu">
+        <a href="#" onclick="encerrarSessao(); return false;">Sair</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" id="comprovante-container">
+    <p style="text-align: center; margin-top: 50px;">Carregando comprovante...</p>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    if (!verificarAutenticacaoProtegida(['CLIENTE', 'PRODUTOR', 'ORGANIZACAO'])) {
+      throw new Error("Acesso bloqueado");
+    }
+
+    const sessao = obterSessao();
+
+    function formatarData(isoString) {
+      const data = new Date(isoString);
+      return data.toLocaleString('pt-BR');
+    }
+
+    function limparTelefone(telefone) {
+      if (!telefone) return '';
+      return telefone.replace(/\D/g, '');
+    }
+
+    async function carregarComprovante() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const container = document.getElementById('comprovante-container');
+
+      if (!id) {
+        container.innerHTML = `
+          <div class="alert alert-error" style="display:block; margin-top: 30px;">ID do pedido não informado.</div>
+          <div style="text-align:center; margin-top: 20px;"><a href="index.html" class="btn btn-primary">Voltar ao Início</a></div>
+        `;
+        return;
+      }
+
+      try {
+        const data = await apiFetch(`/pedidos/${id}/comprovante`);
+        
+        let htmlItens = '';
+        const produtoresContatos = {};
+
+        data.itens.forEach(item => {
+          const subtotal = item.quantidade * item.preco_unitario;
+          htmlItens += `
+            <tr>
+              <td>${escapeHTML(item.produto_nome)}<br><small style="color:#666">${escapeHTML(item.produtor_nome)}</small></td>
+              <td>${item.quantidade}</td>
+              <td>R$ ${item.preco_unitario.toFixed(2)}</td>
+              <td>R$ ${subtotal.toFixed(2)}</td>
+            </tr>
+          `;
+          
+          if (item.produtor_telefone) {
+            produtoresContatos[item.produtor_id] = {
+              nome: item.produtor_nome,
+              telefone: limparTelefone(item.produtor_telefone)
+            };
+          }
+        });
+
+        let htmlContatos = '';
+        if (Object.keys(produtoresContatos).length > 0) {
+          htmlContatos += `
+            <div class="contact-card">
+              <h3>Contato com os Produtores (WhatsApp)</h3>
+              <p style="font-size: 0.9rem; margin-bottom: 10px;">Clique nos botões abaixo para combinar detalhes da retirada com cada produtor:</p>
+          `;
+          
+          for (const pid in produtoresContatos) {
+            const p = produtoresContatos[pid];
+            const msg = `Olá, fiz o pedido ${data.comprovante_codigo} no SISFEIRA e gostaria de combinar a retirada.`;
+            const url = `https://wa.me/55${p.telefone}?text=${encodeURIComponent(msg)}`;
+            htmlContatos += `<a href="${url}" target="_blank" class="btn btn-secondary" style="margin-right: 10px;">Falar com ${escapeHTML(p.nome)}</a>`;
+          }
+          
+          htmlContatos += `</div>`;
+        }
+
+        container.innerHTML = `
+          <div class="receipt-container">
+            <div class="receipt-header">
+              <h2>Pedido Confirmado!</h2>
+              <div class="receipt-code">${escapeHTML(data.comprovante_codigo)}</div>
+              <span class="badge">${escapeHTML(data.status)}</span>
+            </div>
+
+            <div class="info-section">
+              <h3>Detalhes do Pedido</h3>
+              <p><strong>Feira:</strong> ${escapeHTML(data.edicao_nome)}</p>
+              <p><strong>Data:</strong> ${formatarData(data.criado_em)}</p>
+              <p><strong>Cliente:</strong> ${escapeHTML(data.cliente_nome)}</p>
+            </div>
+
+            <div class="info-section">
+              <h3>Local de Retirada</h3>
+              <p><strong>${escapeHTML(data.ponto_nome)}</strong></p>
+              <p>${escapeHTML(data.ponto_endereco)}</p>
+            </div>
+
+            <div class="info-section">
+              <h3>Itens do Pedido</h3>
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Qtd</th>
+                    <th>Preço Un.</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${htmlItens}
+                </tbody>
+              </table>
+              <div class="receipt-total">Total: R$ ${data.valor_total.toFixed(2)}</div>
+            </div>
+
+            ${htmlContatos}
+
+            <div class="actions">
+              <button class="btn btn-primary" onclick="window.print()">Imprimir Comprovante</button>
+              <a href="index.html" class="btn" style="background: var(--cor-borda); color: #333;">Voltar ao Catálogo</a>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        container.innerHTML = `
+          <div class="alert alert-error" style="display:block; margin-top: 30px;">
+            ${error.mensagem || 'Erro ao carregar o comprovante do pedido.'}
+          </div>
+          <div style="text-align:center; margin-top: 20px;"><a href="index.html" class="btn btn-primary">Voltar ao Início</a></div>
+        `;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarComprovante);
+  </script>
+</body>
+</html>

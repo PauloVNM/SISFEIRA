@@ -73,7 +73,7 @@
           </select>
         </div>
 
-        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="confirmarPedido()">Confirmar Pedido</button>
+        <button class="btn btn-primary" id="btnConfirmar" style="width: 100%; margin-top: 10px;" onclick="confirmarPedido()">Confirmar Pedido</button>
       </div>
     </div>
   </main>
@@ -190,7 +190,7 @@
       setTimeout(() => alert.style.display = 'none', 4000);
     }
 
-    function confirmarPedido() {
+    async function confirmarPedido() {
       const carrinho = obterCarrinho();
       if (carrinho.length === 0) {
         mostrarErro('Adicione itens ao carrinho antes de confirmar.');
@@ -207,18 +207,34 @@
 
       const sessao = obterSessao();
       if (!sessao) {
-        alert('Você precisa estar logado para finalizar o pedido. Redirecionando...');
+        alert('Você precisa estar logado para finalizar o pedido. Redirecionando para login...');
         window.location.href = '/login.html';
         return;
       }
 
       if (sessao.usuario.perfil !== 'CLIENTE') {
-        mostrarErro('Apenas perfis de CLIENTE podem realizar pedidos.');
+        mostrarErro('Apenas clientes podem fechar pedidos. Produtores não possuem essa permissão nesta interface.');
         return;
       }
 
-      alert('Preparando pedido para a próxima etapa (FEAT-04).');
-      // A integração da FEAT-04 consumirá os dados salvos para finalizar a compra
+      const payload = {
+        ponto_retirada_id: pontoSelect.value,
+        itens: carrinho.map(item => ({ produto_id: item.id, quantidade: item.quantidade }))
+      };
+
+      const btn = document.getElementById('btnConfirmar');
+      btn.classList.add('btn-loading');
+      btn.textContent = 'Processando...';
+
+      try {
+        const resposta = await apiFetch('/pedidos', { method: 'POST', body: payload });
+        limparCarrinho();
+        window.location.href = `comprovante.html?id=${resposta.id}`;
+      } catch (error) {
+        mostrarErro(error.mensagem || 'Erro ao processar o pedido. Tente novamente.');
+        btn.classList.remove('btn-loading');
+        btn.textContent = 'Confirmar Pedido';
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
