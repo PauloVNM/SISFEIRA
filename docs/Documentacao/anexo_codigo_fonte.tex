@@ -1,0 +1,1160 @@
+\subsubsection*{Arquivo: src/server.js}
+\begin{lstlisting}[caption={src/server.js}]
+// src/server.js
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const pool = require('./config/db');
+const errorHandler = require('./middlewares/error.middleware');
+const asyncHandler = require('./middlewares/async.middleware');
+const authRoutes = require('./modules/auth/auth.routes');
+const catalogRoutes = require('./modules/catalog/catalog.routes');
+const orderRoutes = require('./modules/order/order.routes');
+const notificationRoutes = require('./modules/notification/notification.routes');
+const reportRoutes = require('./modules/report/report.routes');
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
+
+app.get('/api/health', asyncHandler(async (req, res) => {
+  await pool.query('SELECT 1');
+  res.status(200).json({ status: 'UP', database: 'connected' });
+}));
+
+
+app.use('/api/auth', authRoutes);
+app.use('/api', catalogRoutes);
+app.use('/api', orderRoutes);
+app.use('/api/notificacoes', notificationRoutes);
+app.use('/api/relatorios', reportRoutes);
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/config/db.js}
+\begin{lstlisting}[caption={src/config/db.js}]
+require('dotenv').config();
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+});
+
+module.exports = pool;
+\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/config/mailer.js}
+\begin{lstlisting}[caption={src/config/mailer.js}]
+// src/config/mailer.js
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+const enviarEmailNotificacao = async ({ destinatario, assunto, texto, html }) => {
+  if (!process.env.SMTP_HOST) {
+    console.warn('[Mailer] SMTP não configurado. Disparo ignorado com segurança.');
+    return false;
+  }
+
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER || '"SISFEIRA" <no-reply@sisfeira.local>',
+      to: destinatario,
+      subject: assunto,
+      text: texto,
+      html: html,
+    });
+    return true;
+  } catch (err) {
+    console.error('[Mailer Error]:', err.message);
+    return false;
+  }
+};
+
+module.exports = { enviarEmailNotificacao };\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/middlewares/async.middleware.js}
+\begin{lstlisting}[caption={src/middlewares/async.middleware.js}]
+const asyncHandler = (fn) => (req, res, next) => {
+  return Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+module.exports = asyncHandler;
+\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/middlewares/auth.middleware.js}
+\begin{lstlisting}[caption={src/middlewares/auth.middleware.js}]
+// src/middlewares/auth.middleware.js
+const jwt = require('jsonwebtoken');
+
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({
+      erro: true,
+      mensagem: 'Token inválido ou não fornecido',
+      codigo: 'UNAUTHORIZED'
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecret');
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      erro: true,
+      mensagem: 'Token inválido ou não fornecido',
+      codigo: 'UNAUTHORIZED'
+    });
+  }
+};
+
+const requireRole = (rolesPermitidas) => {
+  return (req, res, next) => {
+    if (!req.user || !rolesPermitidas.includes(req.user.perfil)) {
+      return res.status(403).json({
+        erro: true,
+        mensagem: 'Acesso não autorizado para este perfil',
+        codigo: 'FORBIDDEN'
+      });
+    }
+    next();
+  };
+};
+
+module.exports = { verifyToken, requireRole };\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/middlewares/error.middleware.js}
+\begin{lstlisting}[caption={src/middlewares/error.middleware.js}]
+const errorHandler = (err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    erro: true,
+    mensagem: err.message || 'Erro interno do servidor',
+    codigo: err.code || 'INTERNAL_SERVER_ERROR'
+  });
+};
+
+module.exports = errorHandler;
+\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/auth/auth.controller.js}
+\begin{lstlisting}[caption={src/modules/auth/auth.controller.js}]
+// src/modules/auth/auth.controller.js
+const authService = require('./auth.service');
+const asyncHandler = require('../../middlewares/async.middleware');
+
+class AuthController {
+  cadastrar = asyncHandler(async (req, res) => {
+    const novoUsuario = await authService.cadastrar(req.body);
+    res.status(201).json(novoUsuario);
+  });
+
+  login = asyncHandler(async (req, res) => {
+    const credenciais = await authService.login(req.body);
+    res.status(200).json(credenciais);
+  });
+}
+
+module.exports = new AuthController();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/auth/auth.repository.js}
+\begin{lstlisting}[caption={src/modules/auth/auth.repository.js}]
+const pool = require('../../config/db');
+
+class AuthRepository {
+  async buscarPorEmail(email) {
+    const query = `
+      SELECT id, nome, email, senha_hash, telefone, perfil 
+      FROM usuarios 
+      WHERE email = $1
+    `;
+    const result = await pool.query(query, [email]);
+    return result.rows[0];
+  }
+
+  async criarUsuario({ nome, email, senha_hash, telefone, perfil }) {
+    const query = `
+      INSERT INTO usuarios (nome, email, senha_hash, telefone, perfil) 
+      VALUES ($1, $2, $3, $4, $5) 
+      RETURNING id, nome, email, telefone, perfil
+    `;
+    const values = [nome, email, senha_hash, telefone, perfil];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  }
+}
+
+module.exports = new AuthRepository();
+\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/auth/auth.routes.js}
+\begin{lstlisting}[caption={src/modules/auth/auth.routes.js}]
+// src/modules/auth/auth.routes.js
+const express = require('express');
+const authController = require('./auth.controller');
+
+const router = express.Router();
+
+router.post('/cadastro', authController.cadastrar);
+router.post('/login', authController.login);
+
+module.exports = router;\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/auth/auth.service.js}
+\begin{lstlisting}[caption={src/modules/auth/auth.service.js}]
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const authRepository = require('./auth.repository');
+
+class AuthService {
+  async cadastrar({ nome, email, senha, telefone, perfil }) {
+    if (!nome || !email || !senha || !perfil) {
+      const error = new Error('Campos obrigatórios: nome, email, senha e perfil');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const perfisValidos = ['CLIENTE', 'PRODUTOR', 'ORGANIZACAO'];
+    if (!perfisValidos.includes(perfil)) {
+      const error = new Error('Perfil inválido');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (perfil === 'PRODUTOR' && !telefone) {
+      const error = new Error('Telefone é obrigatório para produtores');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const usuarioExistente = await authRepository.buscarPorEmail(email);
+    if (usuarioExistente) {
+      const error = new Error('E-mail já cadastrado');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const senha_hash = await bcrypt.hash(senha, salt);
+
+    const novoUsuario = await authRepository.criarUsuario({
+      nome,
+      email,
+      senha_hash,
+      telefone: telefone || null,
+      perfil
+    });
+
+    return novoUsuario;
+  }
+
+  async login({ email, senha }) {
+    if (!email || !senha) {
+      const error = new Error('Email e senha são obrigatórios');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const usuario = await authRepository.buscarPorEmail(email);
+    if (!usuario) {
+      const error = new Error('Credenciais inválidas');
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const isMatch = await bcrypt.compare(senha, usuario.senha_hash);
+    if (!isMatch) {
+      const error = new Error('Credenciais inválidas');
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const payload = {
+      id: usuario.id,
+      nome: usuario.nome,
+      perfil: usuario.perfil
+    };
+
+    const token = jwt.sign(
+      payload, 
+      process.env.JWT_SECRET || 'supersecret', 
+      { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
+    );
+
+    return {
+      token,
+      usuario: payload
+    };
+  }
+}
+
+module.exports = new AuthService();
+\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/catalog/catalog.controller.js}
+\begin{lstlisting}[caption={src/modules/catalog/catalog.controller.js}]
+// src/modules/catalog/catalog.controller.js
+const catalogService = require('./catalog.service');
+const asyncHandler = require('../../middlewares/async.middleware');
+
+class CatalogController {
+  listarCatalogo = asyncHandler(async (req, res) => {
+    const produtos = await catalogService.listarCatalogo();
+    res.status(200).json(produtos);
+  });
+
+  listarProdutosDoProdutor = asyncHandler(async (req, res) => {
+    const produtos = await catalogService.listarProdutosDoProdutor(req.user.id);
+    res.status(200).json(produtos);
+  });
+
+  criarProduto = asyncHandler(async (req, res) => {
+    const produto = await catalogService.criarProduto(req.user.id, req.body);
+    res.status(201).json(produto);
+  });
+
+  atualizarProduto = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const produto = await catalogService.atualizarProduto(id, req.user.id, req.body);
+    res.status(200).json(produto);
+  });
+
+  desativarProduto = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const resultado = await catalogService.desativarProduto(id, req.user.id);
+    res.status(200).json(resultado);
+  });
+}
+
+module.exports = new CatalogController();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/catalog/catalog.repository.js}
+\begin{lstlisting}[caption={src/modules/catalog/catalog.repository.js}]
+// src/modules/catalog/catalog.repository.js
+const pool = require('../../config/db');
+
+class CatalogRepository {
+  async listarCatalogoPublico() {
+    const query = `
+      SELECT p.id, p.nome, p.descricao, p.preco, p.unidade_medida, 
+             u.nome AS produtor_nome, u.id AS produtor_id
+      FROM produtos p
+      INNER JOIN usuarios u ON p.produtor_id = u.id
+      WHERE p.ativo = TRUE
+      ORDER BY p.nome ASC
+    `;
+    const result = await pool.query(query);
+    return result.rows;
+  }
+
+  async listarPorProdutor(produtorId) {
+    const query = `
+      SELECT id, nome, descricao, preco, unidade_medida, ativo 
+      FROM produtos 
+      WHERE produtor_id = $1 AND ativo = TRUE 
+      ORDER BY nome ASC
+    `;
+    const result = await pool.query(query, [produtorId]);
+    return result.rows;
+  }
+
+  async buscarPorId(id) {
+    const query = `SELECT * FROM produtos WHERE id = $1`;
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  }
+
+  async criarProduto({ produtor_id, nome, descricao, preco, unidade_medida }) {
+    const query = `
+      INSERT INTO produtos (produtor_id, nome, descricao, preco, unidade_medida) 
+      VALUES ($1, $2, $3, $4, $5) 
+      RETURNING *
+    `;
+    const values = [produtor_id, nome, descricao, preco, unidade_medida];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  }
+
+  async atualizarProduto(id, produtorId, { nome, descricao, preco, unidade_medida }) {
+    const query = `
+      UPDATE produtos 
+      SET nome = $1, descricao = $2, preco = $3, unidade_medida = $4 
+      WHERE id = $5 AND produtor_id = $6 
+      RETURNING *
+    `;
+    const values = [nome, descricao, preco, unidade_medida, id, produtorId];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  }
+
+  async desativarProduto(id, produtorId) {
+    const query = `
+      UPDATE produtos 
+      SET ativo = FALSE 
+      WHERE id = $1 AND produtor_id = $2 
+      RETURNING id
+    `;
+    const result = await pool.query(query, [id, produtorId]);
+    return result.rows[0];
+  }
+}
+
+module.exports = new CatalogRepository();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/catalog/catalog.routes.js}
+\begin{lstlisting}[caption={src/modules/catalog/catalog.routes.js}]
+// src/modules/catalog/catalog.routes.js
+const express = require('express');
+const catalogController = require('./catalog.controller');
+const { verifyToken, requireRole } = require('../../middlewares/auth.middleware');
+
+const router = express.Router();
+
+router.get('/catalogo', catalogController.listarCatalogo);
+router.get('/produtos/produtor', verifyToken, requireRole(['PRODUTOR']), catalogController.listarProdutosDoProdutor);
+router.post('/produtos', verifyToken, requireRole(['PRODUTOR']), catalogController.criarProduto);
+router.put('/produtos/:id', verifyToken, requireRole(['PRODUTOR']), catalogController.atualizarProduto);
+router.delete('/produtos/:id', verifyToken, requireRole(['PRODUTOR']), catalogController.desativarProduto);
+
+module.exports = router;\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/catalog/catalog.service.js}
+\begin{lstlisting}[caption={src/modules/catalog/catalog.service.js}]
+// src/modules/catalog/catalog.service.js
+const catalogRepository = require('./catalog.repository');
+
+class CatalogService {
+  async listarCatalogo() {
+    const produtos = await catalogRepository.listarCatalogoPublico();
+    return produtos.map(p => ({
+      ...p,
+      preco: Number(p.preco)
+    }));
+  }
+
+  async listarProdutosDoProdutor(produtorId) {
+    const produtos = await catalogRepository.listarPorProdutor(produtorId);
+    return produtos.map(p => ({
+      ...p,
+      preco: Number(p.preco)
+    }));
+  }
+
+  async criarProduto(produtorId, dados) {
+    const { nome, descricao, preco, unidade_medida } = dados;
+
+    if (!nome || preco === undefined || !unidade_medida) {
+      const error = new Error('Campos obrigatórios: nome, preco e unidade_medida');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (Number(preco) < 0) {
+      const error = new Error('O preço não pode ser negativo');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    return await catalogRepository.criarProduto({
+      produtor_id: produtorId,
+      nome,
+      descricao: descricao || null,
+      preco,
+      unidade_medida
+    });
+  }
+
+  async atualizarProduto(id, produtorId, dados) {
+    const produtoExistente = await catalogRepository.buscarPorId(id);
+    
+    if (!produtoExistente) {
+      const error = new Error('Produto não encontrado');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (produtoExistente.produtor_id !== produtorId) {
+      const error = new Error('Acesso negado para modificar este produto');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const { nome, descricao, preco, unidade_medida } = dados;
+
+    return await catalogRepository.atualizarProduto(id, produtorId, {
+      nome: nome || produtoExistente.nome,
+      descricao: descricao !== undefined ? descricao : produtoExistente.descricao,
+      preco: preco !== undefined ? preco : produtoExistente.preco,
+      unidade_medida: unidade_medida || produtoExistente.unidade_medida
+    });
+  }
+
+  async desativarProduto(id, produtorId) {
+    const produtoExistente = await catalogRepository.buscarPorId(id);
+    
+    if (!produtoExistente) {
+      const error = new Error('Produto não encontrado');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (produtoExistente.produtor_id !== produtorId) {
+      const error = new Error('Acesso negado para desativar este produto');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    await catalogRepository.desativarProduto(id, produtorId);
+    return { mensagem: 'Produto desativado com sucesso' };
+  }
+}
+
+module.exports = new CatalogService();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/notification/notification.controller.js}
+\begin{lstlisting}[caption={src/modules/notification/notification.controller.js}]
+// src/modules/notification/notification.controller.js
+const notificationService = require('./notification.service');
+const asyncHandler = require('../../middlewares/async.middleware');
+
+class NotificationController {
+  listar = asyncHandler(async (req, res) => {
+    const notificacoes = await notificationService.listarNotificacoes(req.user.id);
+    res.status(200).json(notificacoes);
+  });
+
+  marcarComoLida = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const produtorId = req.user.id;
+    const resultado = await notificationService.marcarLida(id, produtorId);
+    res.status(200).json(resultado);
+  });
+}
+
+module.exports = new NotificationController();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/notification/notification.repository.js}
+\begin{lstlisting}[caption={src/modules/notification/notification.repository.js}]
+// src/modules/notification/notification.repository.js
+const pool = require('../../config/db');
+
+class NotificationRepository {
+  async listarPorProdutor(produtorId) {
+    const query = `
+      SELECT n.id, n.pedido_id, n.mensagem, n.lida,
+             p.comprovante_codigo, p.criado_em AS data_pedido
+      FROM notificacoes n
+      JOIN pedidos p ON n.pedido_id = p.id
+      WHERE n.produtor_id = $1
+      ORDER BY n.lida ASC, p.criado_em DESC;
+    `;
+    const result = await pool.query(query, [produtorId]);
+    return result.rows;
+  }
+
+  async marcarComoLida(notificacaoId, produtorId) {
+    const query = `
+      UPDATE notificacoes 
+      SET lida = TRUE 
+      WHERE id = $1 AND produtor_id = $2 
+      RETURNING id, lida;
+    `;
+    const result = await pool.query(query, [notificacaoId, produtorId]);
+    return result.rows[0];
+  }
+}
+
+module.exports = new NotificationRepository();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/notification/notification.routes.js}
+\begin{lstlisting}[caption={src/modules/notification/notification.routes.js}]
+// src/modules/notification/notification.routes.js
+const express = require('express');
+const notificationController = require('./notification.controller');
+const { verifyToken, requireRole } = require('../../middlewares/auth.middleware');
+
+const router = express.Router();
+
+router.get('/produtor', verifyToken, requireRole(['PRODUTOR']), notificationController.listar);
+router.patch('/:id/lida', verifyToken, requireRole(['PRODUTOR']), notificationController.marcarComoLida);
+
+module.exports = router;\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/notification/notification.service.js}
+\begin{lstlisting}[caption={src/modules/notification/notification.service.js}]
+// src/modules/notification/notification.service.js
+const notificationRepository = require('./notification.repository');
+
+class NotificationService {
+  async listarNotificacoes(produtorId) {
+    return await notificationRepository.listarPorProdutor(produtorId);
+  }
+
+  async marcarLida(notificacaoId, produtorId) {
+    const result = await notificationRepository.marcarComoLida(notificacaoId, produtorId);
+    
+    if (!result) {
+      const error = new Error('Notificação não encontrada ou não autorizada');
+      error.statusCode = 404;
+      throw error;
+    }
+    
+    return { mensagem: 'Notificação marcada como lida com sucesso' };
+  }
+}
+
+module.exports = new NotificationService();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/order/order.controller.js}
+\begin{lstlisting}[caption={src/modules/order/order.controller.js}]
+// src/modules/order/order.controller.js
+const orderService = require('./order.service');
+const asyncHandler = require('../../middlewares/async.middleware');
+
+class OrderController {
+  listarPontosRetirada = asyncHandler(async (req, res) => {
+    const pontos = await orderService.listarPontosRetirada();
+    res.status(200).json(pontos);
+  });
+
+  fecharPedido = asyncHandler(async (req, res) => {
+    const clienteId = req.user.id;
+    const pedido = await orderService.fecharPedido(clienteId, req.body);
+    res.status(201).json(pedido);
+  });
+
+  obterComprovante = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const usuarioId = req.user.id;
+    const perfil = req.user.perfil;
+    const comprovante = await orderService.obterComprovante(id, usuarioId, perfil);
+    res.status(200).json(comprovante);
+  });
+
+  listarHistorico = asyncHandler(async (req, res) => {
+    const historico = await orderService.listarHistoricoCliente(req.user.id);
+    res.status(200).json(historico);
+  });
+
+  listarPedidosProdutor = asyncHandler(async (req, res) => {
+    const pedidos = await orderService.listarPedidosProdutor(req.user.id);
+    res.status(200).json(pedidos);
+  });
+
+  atualizarStatus = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const produtorId = req.user.id;
+    const { status } = req.body;
+    const resultado = await orderService.atualizarStatusPedido(id, produtorId, status);
+    res.status(200).json(resultado);
+  });
+}
+
+module.exports = new OrderController();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/order/order.repository.js}
+\begin{lstlisting}[caption={src/modules/order/order.repository.js}]
+// src/modules/order/order.repository.js
+const pool = require('../../config/db');
+
+class OrderRepository {
+  async listarPontosRetirada() {
+    const query = `SELECT id, nome, endereco FROM pontos_retirada ORDER BY nome ASC`;
+    const result = await pool.query(query);
+    return result.rows;
+  }
+
+  async buscarEdicaoAtiva() {
+    const query = `SELECT id, nome_identificador FROM edicoes_feira WHERE ativa = TRUE LIMIT 1`;
+    const result = await pool.query(query);
+    return result.rows[0] || null;
+  }
+
+  async buscarPontoRetiradaPorId(id) {
+    const query = `SELECT id, nome, endereco FROM pontos_retirada WHERE id = $1`;
+    const result = await pool.query(query, [id]);
+    return result.rows[0] || null;
+  }
+
+  async buscarProdutosPorIds(ids) {
+    const query = `
+      SELECT id, produtor_id, nome, preco, ativo 
+      FROM produtos 
+      WHERE id = ANY($1::uuid[]) AND ativo = TRUE
+    `;
+    const result = await pool.query(query, [ids]);
+    return result.rows;
+  }
+
+  async criarPedidoTransacional({ cliente_id, edicao_id, ponto_retirada_id, comprovante_codigo, status, valor_total, itens, notificacoes }) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      const insertPedidoQuery = `
+        INSERT INTO pedidos (cliente_id, edicao_id, ponto_retirada_id, comprovante_codigo, status, valor_total)
+        VALUES ($1, $2, $3, $4, $5, $6) 
+        RETURNING id, comprovante_codigo, status, valor_total, criado_em;
+      `;
+      const pedidoRes = await client.query(insertPedidoQuery, [
+        cliente_id, edicao_id, ponto_retirada_id, comprovante_codigo, status, valor_total
+      ]);
+      const pedido = pedidoRes.rows[0];
+
+      const insertItemQuery = `
+        INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario)
+        VALUES ($1, $2, $3, $4);
+      `;
+      for (const item of itens) {
+        await client.query(insertItemQuery, [
+          pedido.id, item.produto_id, item.quantidade, item.preco_unitario
+        ]);
+      }
+
+      const insertNotificacaoQuery = `
+        INSERT INTO notificacoes (produtor_id, pedido_id, mensagem)
+        VALUES ($1, $2, $3);
+      `;
+      for (const notif of notificacoes) {
+        await client.query(insertNotificacaoQuery, [
+          notif.produtor_id, pedido.id, notif.mensagem
+        ]);
+      }
+
+      await client.query('COMMIT');
+      return pedido;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async buscarComprovantePorId(pedidoId, usuarioId, perfil) {
+    const pedidoQuery = `
+      SELECT p.id, p.comprovante_codigo, p.status, p.valor_total, p.criado_em, p.cliente_id,
+             pr.nome AS ponto_nome, pr.endereco AS ponto_endereco,
+             ef.nome_identificador AS edicao_nome,
+             u_cli.nome AS cliente_nome, u_cli.telefone AS cliente_telefone
+      FROM pedidos p
+      JOIN pontos_retirada pr ON p.ponto_retirada_id = pr.id
+      JOIN edicoes_feira ef ON p.edicao_id = ef.id
+      JOIN usuarios u_cli ON p.cliente_id = u_cli.id
+      WHERE p.id = $1;
+    `;
+    const pedidoRes = await pool.query(pedidoQuery, [pedidoId]);
+    const pedido = pedidoRes.rows[0];
+
+    if (!pedido) return null;
+
+    if (perfil === 'CLIENTE' && pedido.cliente_id !== usuarioId) {
+      const error = new Error('Acesso não autorizado ao pedido');
+      error.statusCode = 403;
+      error.codigo = 'FORBIDDEN';
+      throw error;
+    }
+
+    const itensQuery = `
+      SELECT ip.quantidade, ip.preco_unitario, prod.nome AS produto_nome,
+             u_prod.id AS produtor_id, u_prod.nome AS produtor_nome, u_prod.telefone AS produtor_telefone
+      FROM itens_pedido ip
+      JOIN produtos prod ON ip.produto_id = prod.id
+      JOIN usuarios u_prod ON prod.produtor_id = u_prod.id
+      WHERE ip.pedido_id = $1;
+    `;
+    const itensRes = await pool.query(itensQuery, [pedidoId]);
+    pedido.itens = itensRes.rows;
+
+    return pedido;
+  }
+
+  async listarPorCliente(clienteId) {
+    const query = `
+      SELECT p.id, p.comprovante_codigo, p.status, p.valor_total, p.criado_em,
+             pr.nome AS ponto_nome, pr.endereco AS ponto_endereco
+      FROM pedidos p
+      JOIN pontos_retirada pr ON p.ponto_retirada_id = pr.id
+      WHERE p.cliente_id = $1
+      ORDER BY p.criado_em DESC;
+    `;
+    const result = await pool.query(query, [clienteId]);
+    return result.rows;
+  }
+
+  async listarPorProdutor(produtorId) {
+    const query = `
+      SELECT DISTINCT p.id, p.comprovante_codigo, p.status, p.valor_total, p.criado_em,
+             pr.nome AS ponto_nome,
+             u_cli.nome AS cliente_nome, u_cli.telefone AS cliente_telefone
+      FROM pedidos p
+      JOIN pontos_retirada pr ON p.ponto_retirada_id = pr.id
+      JOIN usuarios u_cli ON p.cliente_id = u_cli.id
+      JOIN itens_pedido ip ON p.id = ip.pedido_id
+      JOIN produtos prod ON ip.produto_id = prod.id
+      WHERE prod.produtor_id = $1
+      ORDER BY p.criado_em DESC;
+    `;
+    const result = await pool.query(query, [produtorId]);
+    return result.rows;
+  }
+
+  async buscarItensDoProdutorNoPedido(pedidoId, produtorId) {
+    const query = `
+      SELECT ip.quantidade, ip.preco_unitario, prod.nome AS produto_nome
+      FROM itens_pedido ip
+      JOIN produtos prod ON ip.produto_id = prod.id
+      WHERE ip.pedido_id = $1 AND prod.produtor_id = $2;
+    `;
+    const result = await pool.query(query, [pedidoId, produtorId]);
+    return result.rows;
+  }
+
+  async verificarProdutorPertenceAoPedido(pedidoId, produtorId) {
+    const query = `
+      SELECT 1 FROM itens_pedido ip
+      JOIN produtos prod ON ip.produto_id = prod.id
+      WHERE ip.pedido_id = $1 AND prod.produtor_id = $2
+      LIMIT 1;
+    `;
+    const result = await pool.query(query, [pedidoId, produtorId]);
+    return result.rows.length > 0;
+  }
+
+  async buscarStatusAtual(pedidoId) {
+    const query = `SELECT id, status, comprovante_codigo FROM pedidos WHERE id = $1;`;
+    const result = await pool.query(query, [pedidoId]);
+    return result.rows[0];
+  }
+
+  async atualizarStatus(pedidoId, novoStatus) {
+    const query = `
+      UPDATE pedidos 
+      SET status = $1 
+      WHERE id = $2 
+      RETURNING id, status, comprovante_codigo;
+    `;
+    const result = await pool.query(query, [novoStatus, pedidoId]);
+    return result.rows[0];
+  }
+}
+
+module.exports = new OrderRepository();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/order/order.routes.js}
+\begin{lstlisting}[caption={src/modules/order/order.routes.js}]
+// src/modules/order/order.routes.js
+const express = require('express');
+const orderController = require('./order.controller');
+const { verifyToken, requireRole } = require('../../middlewares/auth.middleware');
+
+const router = express.Router();
+
+router.get('/pontos-retirada', orderController.listarPontosRetirada);
+router.post('/pedidos', verifyToken, requireRole(['CLIENTE']), orderController.fecharPedido);
+router.get('/pedidos/historico', verifyToken, requireRole(['CLIENTE']), orderController.listarHistorico);
+router.get('/pedidos/produtor', verifyToken, requireRole(['PRODUTOR']), orderController.listarPedidosProdutor);
+router.get('/pedidos/:id/comprovante', verifyToken, orderController.obterComprovante);
+router.patch('/pedidos/:id/status', verifyToken, requireRole(['PRODUTOR']), orderController.atualizarStatus);
+
+module.exports = router;\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/order/order.service.js}
+\begin{lstlisting}[caption={src/modules/order/order.service.js}]
+// src/modules/order/order.service.js
+const orderRepository = require('./order.repository');
+
+class OrderService {
+  async listarPontosRetirada() {
+    return await orderRepository.listarPontosRetirada();
+  }
+
+  async fecharPedido(clienteId, { ponto_retirada_id, itens }) {
+    if (!ponto_retirada_id) {
+      const error = new Error('Ponto de retirada é obrigatório');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (!Array.isArray(itens) || itens.length === 0) {
+      const error = new Error('O carrinho não pode estar vazio');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const ponto = await orderRepository.buscarPontoRetiradaPorId(ponto_retirada_id);
+    if (!ponto) {
+      const error = new Error('Ponto de retirada inválido');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const edicao = await orderRepository.buscarEdicaoAtiva();
+    if (!edicao) {
+      const error = new Error('Não há nenhuma edição de feira ativa no momento');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const idsProdutos = itens.map(i => i.produto_id);
+    const dbProdutos = await orderRepository.buscarProdutosPorIds(idsProdutos);
+
+    if (dbProdutos.length !== idsProdutos.length) {
+      const error = new Error('Um ou mais produtos não estão mais disponíveis');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    let valor_total = 0;
+    const itensMapeados = [];
+    const produtoresSet = new Set();
+
+    for (const reqItem of itens) {
+      if (reqItem.quantidade <= 0) {
+        const error = new Error('Quantidade inválida para o produto ' + reqItem.produto_id);
+        error.statusCode = 400;
+        throw error;
+      }
+      
+      const dbProd = dbProdutos.find(p => p.id === reqItem.produto_id);
+      const precoUnitario = Number(dbProd.preco);
+      valor_total += precoUnitario * reqItem.quantidade;
+      
+      itensMapeados.push({
+        produto_id: reqItem.produto_id,
+        quantidade: reqItem.quantidade,
+        preco_unitario: precoUnitario
+      });
+
+      produtoresSet.add(dbProd.produtor_id);
+    }
+
+    const comprovante_codigo = 'SISF-' + Math.floor(1000 + Math.random() * 9000);
+    const status = 'RECEBIDO';
+
+    const notificacoes = Array.from(produtoresSet).map(produtor_id => ({
+      produtor_id,
+      mensagem: 'Você tem um novo pedido com itens a serem preparados'
+    }));
+
+    const pedido = await orderRepository.criarPedidoTransacional({
+      cliente_id: clienteId,
+      edicao_id: edicao.id,
+      ponto_retirada_id,
+      comprovante_codigo,
+      status,
+      valor_total,
+      itens: itensMapeados,
+      notificacoes
+    });
+
+    return pedido;
+  }
+
+  async obterComprovante(pedidoId, usuarioId, perfil) {
+    const comprovante = await orderRepository.buscarComprovantePorId(pedidoId, usuarioId, perfil);
+    if (!comprovante) {
+      const error = new Error('Pedido não encontrado');
+      error.statusCode = 404;
+      throw error;
+    }
+    
+    comprovante.valor_total = Number(comprovante.valor_total);
+    comprovante.itens = comprovante.itens.map(item => ({
+      ...item,
+      preco_unitario: Number(item.preco_unitario)
+    }));
+    
+    return comprovante;
+  }
+
+  async listarHistoricoCliente(clienteId) {
+    const historico = await orderRepository.listarPorCliente(clienteId);
+    return historico.map(p => ({
+      ...p,
+      valor_total: Number(p.valor_total)
+    }));
+  }
+
+  async listarPedidosProdutor(produtorId) {
+    const pedidos = await orderRepository.listarPorProdutor(produtorId);
+    
+    for (const pedido of pedidos) {
+      pedido.valor_total = Number(pedido.valor_total);
+      pedido.itens = await orderRepository.buscarItensDoProdutorNoPedido(pedido.id, produtorId);
+    }
+    
+    return pedidos;
+  }
+
+  async atualizarStatusPedido(pedidoId, produtorId, novoStatus) {
+    const statusValidos = ['RECEBIDO', 'EM_PREPARACAO', 'ENTREGUE'];
+    if (!statusValidos.includes(novoStatus)) {
+      const error = new Error('Status inválido');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const pedido = await orderRepository.buscarStatusAtual(pedidoId);
+    if (!pedido) {
+      const error = new Error('Pedido não encontrado');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const pertence = await orderRepository.verificarProdutorPertenceAoPedido(pedidoId, produtorId);
+    if (!pertence) {
+      const error = new Error('Acesso não autorizado para alterar este pedido');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const statusAtual = pedido.status;
+    if (statusAtual === 'RECEBIDO' && novoStatus !== 'EM_PREPARACAO') {
+      const error = new Error('Transição inválida: pedidos recebidos só podem avançar para EM_PREPARACAO');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (statusAtual === 'EM_PREPARACAO' && novoStatus !== 'ENTREGUE') {
+      const error = new Error('Transição inválida: pedidos em preparação só podem avançar para ENTREGUE');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (statusAtual === 'ENTREGUE') {
+      const error = new Error('Transição inválida: pedido já se encontra finalizado como ENTREGUE');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const atualizado = await orderRepository.atualizarStatus(pedidoId, novoStatus);
+    
+    return { 
+      sucesso: true, 
+      mensagem: `Status do pedido alterado para ${novoStatus} com sucesso.`,
+      status: atualizado.status
+    };
+  }
+}
+
+module.exports = new OrderService();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/report/report.controller.js}
+\begin{lstlisting}[caption={src/modules/report/report.controller.js}]
+// src/modules/report/report.controller.js
+const reportService = require('./report.service');
+const asyncHandler = require('../../middlewares/async.middleware');
+
+class ReportController {
+  obterRelatorioVendas = asyncHandler(async (req, res) => {
+    const relatorio = await reportService.gerarRelatorioVendas(req.user.id);
+    res.status(200).json(relatorio);
+  });
+}
+
+module.exports = new ReportController();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/report/report.repository.js}
+\begin{lstlisting}[caption={src/modules/report/report.repository.js}]
+// src/modules/report/report.repository.js
+const pool = require('../../config/db');
+
+class ReportRepository {
+  async obterMetricasGerais(produtorId) {
+    const query = `
+      SELECT 
+        COALESCE(SUM(ip.quantidade * ip.preco_unitario), 0)::numeric(10,2) AS total_faturado,
+        COUNT(DISTINCT ip.pedido_id)::int AS total_pedidos
+      FROM itens_pedido ip
+      JOIN produtos p ON ip.produto_id = p.id
+      WHERE p.produtor_id = $1;
+    `;
+    const result = await pool.query(query, [produtorId]);
+    return result.rows[0];
+  }
+
+  async obterItensMaisVendidos(produtorId) {
+    const query = `
+      SELECT 
+        p.nome AS produto_nome,
+        SUM(ip.quantidade)::int AS quantidade_vendida,
+        SUM(ip.quantidade * ip.preco_unitario)::numeric(10,2) AS subtotal
+      FROM itens_pedido ip
+      JOIN produtos p ON ip.produto_id = p.id
+      WHERE p.produtor_id = $1
+      GROUP BY p.nome
+      ORDER BY quantidade_vendida DESC;
+    `;
+    const result = await pool.query(query, [produtorId]);
+    return result.rows;
+  }
+}
+
+module.exports = new ReportRepository();\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/report/report.routes.js}
+\begin{lstlisting}[caption={src/modules/report/report.routes.js}]
+// src/modules/report/report.routes.js
+const express = require('express');
+const reportController = require('./report.controller');
+const { verifyToken, requireRole } = require('../../middlewares/auth.middleware');
+
+const router = express.Router();
+
+router.get('/vendas/produtor', verifyToken, requireRole(['PRODUTOR']), reportController.obterRelatorioVendas);
+
+module.exports = router;\end{lstlisting}
+\vspace{0.5cm}
+\subsubsection*{Arquivo: src/modules/report/report.service.js}
+\begin{lstlisting}[caption={src/modules/report/report.service.js}]
+// src/modules/report/report.service.js
+const reportRepository = require('./report.repository');
+
+class ReportService {
+  async gerarRelatorioVendas(produtorId) {
+    const [metricas, itens] = await Promise.all([
+      reportRepository.obterMetricasGerais(produtorId),
+      reportRepository.obterItensMaisVendidos(produtorId)
+    ]);
+
+    return {
+      total_faturado: parseFloat(metricas.total_faturado) || 0,
+      total_pedidos: parseInt(metricas.total_pedidos, 10) || 0,
+      itens_mais_vendidos: itens.map(item => ({
+        produto_nome: item.produto_nome,
+        quantidade_vendida: parseInt(item.quantidade_vendida, 10),
+        subtotal: parseFloat(item.subtotal)
+      }))
+    };
+  }
+}
+
+module.exports = new ReportService();\end{lstlisting}
+\vspace{0.5cm}
