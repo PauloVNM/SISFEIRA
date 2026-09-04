@@ -17,3 +17,5 @@ ai-context-code.txt
 node_modules
 *.log
 .DS_Store
+generate_latex_code_appendix.sh
+SISFEIRA Local.session.sql
