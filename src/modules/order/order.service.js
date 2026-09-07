@@ -143,6 +143,18 @@ class OrderService {
       throw error;
     }
 
+    // --- NOVA VALIDAÇÃO DE LOGÍSTICA (FEAT-03) ---
+    const produtoresUnicos = [...new Set(dbProdutos.map(p => p.produtor_id))];
+    for (const produtorId of produtoresUnicos) {
+      const atende = await orderRepository.verificarProdutorAtendePonto(produtorId, ponto_retirada_id);
+      if (!atende) {
+        const error = new Error('O feirante responsável pelo produto não realiza entregas no ponto de retirada selecionado.');
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+    // ---------------------------------------------
+
     let valor_total = 0;
     const itensMapeados = [];
     const produtoresSet = new Set();
@@ -299,6 +311,123 @@ class OrderService {
       mensagem: `Status do pedido alterado para ${novoStatus} com sucesso.`,
       status: atualizado.status
     };
+  }
+
+  // --- NOVOS MÉTODOS FEAT-03/FEAT-04 ---
+
+  async listarMeusPontos(produtorId) {
+    return await orderRepository.listarPontosPorProdutor(produtorId);
+  }
+
+  async criarPontoRetirada(produtorId, { nome, endereco }) {
+    if (!nome || typeof nome !== 'string' || nome.trim() === '') {
+      const error = new Error('O nome do ponto de retirada é obrigatório.');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (!endereco || typeof endereco !== 'string' || endereco.trim() === '') {
+      const error = new Error('O endereço do ponto de retirada é obrigatório.');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (nome.trim().length > 100) {
+      const error = new Error('O nome do ponto excede o limite de 100 caracteres.');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (endereco.trim().length > 255) {
+      const error = new Error('O endereço do ponto excede o limite de 255 caracteres.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const novoPonto = await orderRepository.cadastrarPontoRetirada({
+      nome: nome.trim(),
+      endereco: endereco.trim(),
+      criadoPorId: produtorId
+    });
+
+    await orderRepository.vincularProdutorPonto(produtorId, novoPonto.id);
+    return novoPonto;
+  }
+
+  async salvarPontosDoProdutor(produtorId, pontoIds) {
+    if (!Array.isArray(pontoIds)) {
+      const error = new Error('Formato inválido para pontos de retirada.');
+      error.statusCode = 400;
+      throw error;
+    }
+    await orderRepository.atualizarPontosDoProdutorTransacional(produtorId, pontoIds);
+    return { sucesso: true, mensagem: 'Locais de entrega atualizados com sucesso.' };
+  }
+
+  async verificarCompatibilidadeLogistica(produtoIds) {
+    if (!produtoIds || produtoIds.length === 0) {
+      return { compativel: true, pontos_comuns: [], grupos: [] };
+    }
+
+    const dados = await orderRepository.buscarPontosPorProdutoIds(produtoIds);
+    
+    // Mapeando dados: agrupamento por produtor_id
+    const produtoresMap = new Map();
+
+    for (const row of dados) {
+      if (!produtoresMap.has(row.produtor_id)) {
+        produtoresMap.set(row.produtor_id, {
+          produtor_nome: row.produtor_nome,
+          produtos_ids: new Set(),
+          pontos: new Map() // ponto_id -> dados do ponto
+        });
+      }
+      
+      const produtorData = produtoresMap.get(row.produtor_id);
+      produtorData.produtos_ids.add(row.produto_id);
+      produtorData.pontos.set(row.ponto_id, {
+        id: row.ponto_id,
+        nome: row.ponto_nome,
+        endereco: row.ponto_endereco
+      });
+    }
+
+    const produtoresList = Array.from(produtoresMap.entries());
+
+    if (produtoresList.length === 0) {
+      return { compativel: false, pontos_comuns: [], grupos: [] };
+    }
+
+    // Calcula a interseção dos pontos
+    let intersecao = new Map(produtoresList[0][1].pontos);
+
+    for (let i = 1; i < produtoresList.length; i++) {
+      const pontosAtuais = produtoresList[i][1].pontos;
+      for (const pontoId of intersecao.keys()) {
+        if (!pontosAtuais.has(pontoId)) {
+          intersecao.delete(pontoId);
+        }
+      }
+    }
+
+    if (intersecao.size > 0) {
+      return {
+        compativel: true,
+        pontos_comuns: Array.from(intersecao.values()),
+        grupos: []
+      };
+    } else {
+      // Conflito logístico
+      const grupos = produtoresList.map(([id, data]) => ({
+        produtor_id: id,
+        produtor_nome: data.produtor_nome,
+        produtos_ids: Array.from(data.produtos_ids),
+        pontos_disponiveis: Array.from(data.pontos.values())
+      }));
+
+      return {
+        compativel: false,
+        pontos_comuns: [],
+        grupos: grupos
+      };
+    }
   }
 }
 

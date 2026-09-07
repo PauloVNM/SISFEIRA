@@ -191,6 +191,87 @@ class OrderRepository {
     const result = await pool.query(query, [produtorIds]);
     return result.rows;
   }
+
+  // --- NOVOS MÉTODOS FEAT-03/FEAT-04 ---
+
+  async cadastrarPontoRetirada({ nome, endereco, criadoPorId }) {
+    const query = `
+      INSERT INTO pontos_retirada (nome, endereco, criado_por) 
+      VALUES ($1, $2, $3) 
+      RETURNING id, nome, endereco;
+    `;
+    const result = await pool.query(query, [nome, endereco, criadoPorId]);
+    return result.rows[0];
+  }
+
+  async vincularProdutorPonto(produtorId, pontoId, client = null) {
+    const query = `
+      INSERT INTO produtores_pontos_retirada (produtor_id, ponto_retirada_id) 
+      VALUES ($1, $2) 
+      ON CONFLICT DO NOTHING;
+    `;
+    const conn = client || pool;
+    await conn.query(query, [produtorId, pontoId]);
+  }
+
+  async listarPontosPorProdutor(produtorId) {
+    const query = `
+      SELECT pr.id, pr.nome, pr.endereco
+      FROM pontos_retirada pr
+      JOIN produtores_pontos_retirada ppr ON pr.id = ppr.ponto_retirada_id
+      WHERE ppr.produtor_id = $1
+      ORDER BY pr.nome ASC;
+    `;
+    const result = await pool.query(query, [produtorId]);
+    return result.rows;
+  }
+
+  async atualizarPontosDoProdutorTransacional(produtorId, pontoIds) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM produtores_pontos_retirada WHERE produtor_id = $1', [produtorId]);
+      
+      if (Array.isArray(pontoIds) && pontoIds.length > 0) {
+        const insertQuery = `
+          INSERT INTO produtores_pontos_retirada (produtor_id, ponto_retirada_id) 
+          VALUES ($1, $2);
+        `;
+        for (const pontoId of pontoIds) {
+          await client.query(insertQuery, [produtorId, pontoId]);
+        }
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async buscarPontosPorProdutoIds(produtoIds) {
+    const query = `
+      SELECT DISTINCT prod.id AS produto_id, prod.produtor_id, u.nome AS produtor_nome, pr.id AS ponto_id, pr.nome AS ponto_nome, pr.endereco AS ponto_endereco
+      FROM produtos prod
+      JOIN usuarios u ON prod.produtor_id = u.id
+      JOIN produtores_pontos_retirada ppr ON u.id = ppr.produtor_id
+      JOIN pontos_retirada pr ON ppr.ponto_retirada_id = pr.id
+      WHERE prod.id = ANY($1::uuid[]) AND prod.ativo = TRUE;
+    `;
+    const result = await pool.query(query, [produtoIds]);
+    return result.rows;
+  }
+
+  async verificarProdutorAtendePonto(produtorId, pontoRetiradaId) {
+    const query = `
+      SELECT 1 
+      FROM produtores_pontos_retirada 
+      WHERE produtor_id = $1 AND ponto_retirada_id = $2;
+    `;
+    const result = await pool.query(query, [produtorId, pontoRetiradaId]);
+    return result.rows.length > 0;
+  }
 }
 
 module.exports = new OrderRepository();

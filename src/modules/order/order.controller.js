@@ -39,6 +39,28 @@ class OrderController {
     const resultado = await orderService.atualizarStatusPedido(id, produtorId, status);
     res.status(200).json(resultado);
   });
+
+  // --- NOVOS CONTROLADORES FEAT-03/FEAT-04 ---
+
+  listarMeusPontos = asyncHandler(async (req, res) => {
+    const pontos = await orderService.listarMeusPontos(req.user.id);
+    res.status(200).json(pontos);
+  });
+
+  criarPonto = asyncHandler(async (req, res) => {
+    const ponto = await orderService.criarPontoRetirada(req.user.id, req.body);
+    res.status(201).json(ponto);
+  });
+
+  atualizarMeusPontos = asyncHandler(async (req, res) => {
+    const resultado = await orderService.salvarPontosDoProdutor(req.user.id, req.body.ponto_ids);
+    res.status(200).json(resultado);
+  });
+
+  verificarCompatibilidade = asyncHandler(async (req, res) => {
+    const resultado = await orderService.verificarCompatibilidadeLogistica(req.body.produto_ids);
+    res.status(200).json(resultado);
+  });
 }
 
 module.exports = new OrderController();

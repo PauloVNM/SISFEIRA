@@ -33,6 +33,11 @@
     .cart-summary { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: fit-content; }
     .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1rem; }
     .summary-row.total { font-weight: bold; font-size: 1.3rem; color: var(--cor-primaria); border-top: 1px solid var(--cor-borda); padding-top: 15px; }
+
+    /* Estilos específicos da logística (FEAT-03) */
+    .alerta-conflito-pontos { background-color: #FFF3E0; border-left: 4px solid #FF9800; padding: 15px; margin-bottom: 20px; border-radius: 4px; color: #E65100; }
+    .grupo-produtor-card { border: 1px solid var(--cor-borda); border-radius: 6px; padding: 15px; margin-bottom: 15px; background-color: #FAFAFA; }
+    .grupo-produtor-card h4 { margin-top: 0; margin-bottom: 15px; color: var(--cor-primaria); border-bottom: 1px dashed var(--cor-borda); padding-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -52,7 +57,7 @@
 
     <div class="cart-container">
       <div class="cart-items card" id="itens-carrinho">
-        <!-- Itens renderizados aqui -->
+        <!-- Itens e grupos renderizados aqui -->
       </div>
       
       <div class="cart-summary" id="resumo-pedido" style="display: none;">
@@ -66,14 +71,16 @@
           <span id="resumo-total">R$ 0.00</span>
         </div>
 
-        <div class="form-group" style="margin-top: 20px;">
-          <label for="ponto-retirada">Selecione o Ponto de Retirada</label>
-          <select id="ponto-retirada" class="form-control" required>
-            <option value="">Carregando pontos...</option>
-          </select>
+        <div id="bloco-ponto-unico">
+          <div class="form-group" style="margin-top: 20px;">
+            <label for="ponto-retirada">Selecione o Ponto de Retirada</label>
+            <select id="ponto-retirada" class="form-control" required>
+              <!-- Carregado via JS dinâmico -->
+            </select>
+          </div>
         </div>
 
-        <button class="btn btn-primary" id="btnConfirmar" style="width: 100%; margin-top: 10px;" onclick="confirmarPedido()">Confirmar Pedido</button>
+        <button class="btn btn-primary" id="btnConfirmar" style="width: 100%; margin-top: 10px;">Confirmar Pedido</button>
       </div>
     </div>
   </main>
@@ -82,13 +89,15 @@
   <script src="js/auth.js"></script>
   <script src="js/cart.js"></script>
   <script>
+    let compatibilidadeAtual = null;
+
     function renderNav() {
       const sessao = obterSessao();
       let html = `<a href="carrinho.html" class="btn-carrinho">Carrinho (<span class="cart-count">0</span>)</a>`;
       if (sessao) {
         html += `
           <span style="margin-left: 15px;">Olá, ${escapeHTML(sessao.usuario.nome)}</span>
-          ${sessao.usuario.perfil === 'PRODUTOR' ? '<a href="/painel-produtor.html">Meu Painel</a>' : ''}
+          ${sessao.usuario.perfil === 'PRODUTOR' ? '<a href="/painel-produtor.html">Meu Painel</a>' : '<a href="/historico.html">Meus Pedidos</a>'}
           <a href="#" onclick="encerrarSessao(); return false;">Sair</a>
         `;
       } else {
@@ -100,12 +109,10 @@
       atualizarBadgeCarrinho();
     }
 
-    function renderizarCarrinho() {
+    async function carregarCarrinhoECompatibilidade() {
       const carrinho = obterCarrinho();
       const containerItens = document.getElementById('itens-carrinho');
       const containerResumo = document.getElementById('resumo-pedido');
-      
-      containerItens.innerHTML = '';
       
       if (carrinho.length === 0) {
         containerItens.innerHTML = `
@@ -116,30 +123,135 @@
         return;
       }
 
+      containerItens.innerHTML = '<p>Analisando compatibilidade logística dos itens...</p>';
       containerResumo.style.display = 'block';
 
-      carrinho.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'cart-item';
-        div.innerHTML = `
-          <div class="cart-item-info">
-            <h4>${escapeHTML(item.nome)}</h4>
-            <p>${escapeHTML(item.produtor_nome)} - R$ ${item.preco.toFixed(2)} / ${escapeHTML(item.unidade_medida)}</p>
-            <p><strong>Subtotal: R$ ${(item.preco * item.quantidade).toFixed(2)}</strong></p>
-          </div>
-          <div class="cart-item-controls">
-            <button onclick="alterarQtd('${item.id}', -1)">-</button>
-            <input type="number" value="${item.quantidade}" min="1" onchange="inputQtd('${item.id}', this.value)">
-            <button onclick="alterarQtd('${item.id}', 1)">+</button>
-            <button style="margin-left: 10px; background: var(--cor-erro); color: white;" onclick="removerDoCarrinhoUI('${item.id}')">X</button>
-          </div>
-        `;
-        containerItens.appendChild(div);
-      });
+      const produtoIds = carrinho.map(i => i.id);
+      
+      try {
+        compatibilidadeAtual = await apiFetch('/pontos-retirada/compatibilidade', { 
+          method: 'POST', 
+          body: { produto_ids: produtoIds } 
+        });
+        renderizarVisualCarrinho(carrinho, compatibilidadeAtual);
+      } catch(err) {
+        containerItens.innerHTML = '<p class="alert alert-error" style="display:block;">Erro ao verificar regras logísticas. Atualize a página.</p>';
+      }
+    }
 
+    function renderizarVisualCarrinho(carrinho, comp) {
+      const containerItens = document.getElementById('itens-carrinho');
       const total = calcularTotalCarrinho().toFixed(2);
+      
       document.getElementById('resumo-subtotal').textContent = `R$ ${total}`;
       document.getElementById('resumo-total').textContent = `R$ ${total}`;
+      
+      containerItens.innerHTML = '';
+      const blocoPontoUnico = document.getElementById('bloco-ponto-unico');
+      const btnConfirmar = document.getElementById('btnConfirmar');
+
+      // Limpa os event listeners do botão clonando e substituindo
+      const novoBtnConfirmar = btnConfirmar.cloneNode(true);
+      btnConfirmar.parentNode.replaceChild(novoBtnConfirmar, btnConfirmar);
+
+      if (comp.compativel) {
+        // FLUXO NORMAL (Ponto Comum Existe)
+        blocoPontoUnico.style.display = 'block';
+        novoBtnConfirmar.textContent = 'Confirmar Pedido';
+        novoBtnConfirmar.onclick = confirmarPedidoNormal;
+
+        carrinho.forEach(item => containerItens.appendChild(criarHTMLItemCart(item)));
+
+        const selectPonto = document.getElementById('ponto-retirada');
+        if (comp.pontos_comuns.length === 0) {
+          selectPonto.innerHTML = '<option value="">Nenhum local comum aos produtores...</option>';
+          selectPonto.disabled = true;
+          novoBtnConfirmar.disabled = true;
+          mostrarErro('Nenhum ponto de retirada em comum disponível para os produtos selecionados. Remova alguns itens.');
+        } else {
+          selectPonto.innerHTML = '<option value="">Selecione o ponto de retirada...</option>';
+          comp.pontos_comuns.forEach(p => {
+            selectPonto.innerHTML += `<option value="${p.id}">${escapeHTML(p.nome)} - ${escapeHTML(p.endereco)}</option>`;
+          });
+          selectPonto.disabled = false;
+          novoBtnConfirmar.disabled = false;
+          
+          const pontoSalvo = localStorage.getItem('sisfeira_ponto_retirada');
+          if (pontoSalvo && comp.pontos_comuns.some(p => p.id === pontoSalvo)) {
+            selectPonto.value = pontoSalvo;
+          }
+        }
+      } else {
+        // FLUXO DESDOBRADO (Conflito Logístico)
+        blocoPontoUnico.style.display = 'none';
+        novoBtnConfirmar.textContent = `Confirmar ${comp.grupos.length} Pedidos`;
+        novoBtnConfirmar.onclick = confirmarPedidosDesdobrados;
+
+        const alertaHtml = `
+          <div class="alerta-conflito-pontos">
+            <strong>Atenção:</strong> Os produtos escolhidos pertencem a feirantes que atendem em locais de entrega diferentes. Sua compra será dividida em <strong>${comp.grupos.length} pedidos independentes</strong>.
+          </div>
+        `;
+        containerItens.insertAdjacentHTML('beforeend', alertaHtml);
+
+        comp.grupos.forEach(grupo => {
+          const grupoCard = document.createElement('div');
+          grupoCard.className = 'grupo-produtor-card';
+          
+          let itensHtml = '';
+          const itensDoGrupo = carrinho.filter(i => grupo.produtos_ids.includes(i.id));
+          
+          itensDoGrupo.forEach(item => {
+            itensHtml += `<div class="cart-item" style="border:none; padding:10px 0;">
+              <div class="cart-item-info">
+                <h4 style="font-size: 1rem; border:none; margin:0; padding:0; color:#333;">${escapeHTML(item.nome)}</h4>
+                <p>R$ ${item.preco.toFixed(2)} / ${escapeHTML(item.unidade_medida)}</p>
+              </div>
+              <div class="cart-item-controls">
+                <button onclick="alterarQtd('${item.id}', -1)">-</button>
+                <input type="number" value="${item.quantidade}" min="1" onchange="inputQtd('${item.id}', this.value)">
+                <button onclick="alterarQtd('${item.id}', 1)">+</button>
+                <button style="margin-left: 10px; background: var(--cor-erro); color: white;" onclick="removerDoCarrinhoUI('${item.id}')">X</button>
+              </div>
+            </div>`;
+          });
+
+          let optionsPontos = `<option value="">Selecione o local de retirada deste feirante...</option>`;
+          grupo.pontos_disponiveis.forEach(p => {
+            optionsPontos += `<option value="${p.id}">${escapeHTML(p.nome)} - ${escapeHTML(p.endereco)}</option>`;
+          });
+
+          grupoCard.innerHTML = `
+            <h4>Entrega com: ${escapeHTML(grupo.produtor_nome)}</h4>
+            <div>${itensHtml}</div>
+            <div class="form-group" style="margin-top: 15px; margin-bottom: 0;">
+              <select class="form-control select-ponto-grupo" data-produtor-id="${grupo.produtor_id}" required>
+                ${optionsPontos}
+              </select>
+            </div>
+          `;
+          containerItens.appendChild(grupoCard);
+        });
+      }
+    }
+
+    function criarHTMLItemCart(item) {
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      div.innerHTML = `
+        <div class="cart-item-info">
+          <h4>${escapeHTML(item.nome)}</h4>
+          <p>${escapeHTML(item.produtor_nome)} - R$ ${item.preco.toFixed(2)} / ${escapeHTML(item.unidade_medida)}</p>
+          <p><strong>Subtotal: R$ ${(item.preco * item.quantidade).toFixed(2)}</strong></p>
+        </div>
+        <div class="cart-item-controls">
+          <button onclick="alterarQtd('${item.id}', -1)">-</button>
+          <input type="number" value="${item.quantidade}" min="1" onchange="inputQtd('${item.id}', this.value)">
+          <button onclick="alterarQtd('${item.id}', 1)">+</button>
+          <button style="margin-left: 10px; background: var(--cor-erro); color: white;" onclick="removerDoCarrinhoUI('${item.id}')">X</button>
+        </div>
+      `;
+      return div;
     }
 
     function alterarQtd(id, delta) {
@@ -147,7 +259,7 @@
       const item = carrinho.find(i => i.id === id);
       if (item) {
         atualizarQuantidade(id, item.quantidade + delta);
-        renderizarCarrinho();
+        carregarCarrinhoECompatibilidade();
       }
     }
 
@@ -155,31 +267,13 @@
       const novaQtd = parseInt(val, 10);
       if (!isNaN(novaQtd)) {
         atualizarQuantidade(id, novaQtd);
-        renderizarCarrinho();
+        carregarCarrinhoECompatibilidade();
       }
     }
 
     function removerDoCarrinhoUI(id) {
       removerDoCarrinho(id);
-      renderizarCarrinho();
-    }
-
-    async function carregarPontosRetirada() {
-      const select = document.getElementById('ponto-retirada');
-      try {
-        const pontos = await apiFetch('/pontos-retirada');
-        select.innerHTML = '<option value="">Selecione um ponto...</option>';
-        pontos.forEach(p => {
-          select.innerHTML += `<option value="${p.id}">${escapeHTML(p.nome)} - ${escapeHTML(p.endereco)}</option>`;
-        });
-        
-        const pontoSalvo = localStorage.getItem('sisfeira_ponto_retirada');
-        if (pontoSalvo) {
-          select.value = pontoSalvo;
-        }
-      } catch (error) {
-        select.innerHTML = '<option value="">Erro ao carregar pontos</option>';
-      }
+      carregarCarrinhoECompatibilidade();
     }
 
     function mostrarErro(msg) {
@@ -190,32 +284,32 @@
       setTimeout(() => alert.style.display = 'none', 4000);
     }
 
-    async function confirmarPedido() {
-      const carrinho = obterCarrinho();
-      if (carrinho.length === 0) {
-        mostrarErro('Adicione itens ao carrinho antes de confirmar.');
-        return;
+    function validarPermissaoCliente() {
+      const sessao = obterSessao();
+      if (!sessao) {
+        alert('Você precisa estar logado para finalizar o pedido. Redirecionando para login...');
+        window.location.href = '/login.html';
+        return false;
       }
+      if (sessao.usuario.perfil !== 'CLIENTE') {
+        mostrarErro('Apenas clientes podem fechar pedidos. Produtores não possuem essa permissão nesta interface.');
+        return false;
+      }
+      return true;
+    }
 
+    async function confirmarPedidoNormal() {
+      if (!validarPermissaoCliente()) return;
+
+      const carrinho = obterCarrinho();
       const pontoSelect = document.getElementById('ponto-retirada');
+      
       if (!pontoSelect.value) {
         mostrarErro('Por favor, selecione um ponto de retirada.');
         return;
       }
 
       localStorage.setItem('sisfeira_ponto_retirada', pontoSelect.value);
-
-      const sessao = obterSessao();
-      if (!sessao) {
-        alert('Você precisa estar logado para finalizar o pedido. Redirecionando para login...');
-        window.location.href = '/login.html';
-        return;
-      }
-
-      if (sessao.usuario.perfil !== 'CLIENTE') {
-        mostrarErro('Apenas clientes podem fechar pedidos. Produtores não possuem essa permissão nesta interface.');
-        return;
-      }
 
       const payload = {
         ponto_retirada_id: pontoSelect.value,
@@ -237,10 +331,59 @@
       }
     }
 
+    async function confirmarPedidosDesdobrados() {
+      if (!validarPermissaoCliente()) return;
+
+      const carrinho = obterCarrinho();
+      const selects = document.querySelectorAll('.select-ponto-grupo');
+      
+      for (const select of selects) {
+        if (!select.value) {
+          mostrarErro('Selecione o ponto de retirada para TODOS os feirantes antes de prosseguir.');
+          select.focus();
+          return;
+        }
+      }
+
+      const btn = document.getElementById('btnConfirmar');
+      btn.classList.add('btn-loading');
+      btn.textContent = 'Processando Pedidos...';
+
+      const pedidosGerados = [];
+
+      try {
+        for (const grupo of compatibilidadeAtual.grupos) {
+          const select = document.querySelector(`.select-ponto-grupo[data-produtor-id="${grupo.produtor_id}"]`);
+          const itensDoGrupo = carrinho.filter(item => grupo.produtos_ids.includes(item.id));
+          
+          const payload = {
+            ponto_retirada_id: select.value,
+            itens: itensDoGrupo.map(i => ({ produto_id: i.id, quantidade: i.quantidade }))
+          };
+
+          const pedidoCriado = await apiFetch('/pedidos', { method: 'POST', body: payload });
+          pedidosGerados.push(pedidoCriado);
+        }
+
+        limparCarrinho();
+        
+        if (pedidosGerados.length === 1) {
+          window.location.href = `comprovante.html?id=${pedidosGerados[0].id}`;
+        } else {
+          alert(`Sucesso! Foram gerados ${pedidosGerados.length} pedidos. Redirecionando para o histórico...`);
+          window.location.href = 'historico.html';
+        }
+
+      } catch (error) {
+        mostrarErro(error.mensagem || 'Ocorreu um erro durante a criação dos pedidos desdobrados.');
+        btn.classList.remove('btn-loading');
+        btn.textContent = `Confirmar ${compatibilidadeAtual.grupos.length} Pedidos`;
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       renderNav();
-      renderizarCarrinho();
-      carregarPontosRetirada();
+      carregarCarrinhoECompatibilidade();
     });
   </script>
 </body>

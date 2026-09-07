@@ -1,4 +1,4 @@
-<!-- Atualização de: frontend/painel-produtor.html -->
+<!-- frontend/painel-produtor.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -82,10 +82,11 @@
       <button class="tab-btn active" id="tab-produtos" onclick="mostrarAba('produtos')">Meus Produtos</button>
       <button class="tab-btn" id="tab-encomendas" onclick="mostrarAba('encomendas')">Gestão de Encomendas</button>
       <button class="tab-btn" id="tab-relatorios" onclick="mostrarAba('relatorios')">Relatório de Vendas</button>
+      <button class="tab-btn" id="tab-pontos" onclick="mostrarAba('pontos')">Locais de Entrega</button>
     </div>
 
     <!-- SEÇÃO PRODUTOS -->
-    <div id="secao-produtos">
+    <div id="secao-produtos" class="painel-secao">
       <div class="panel-header">
         <h3 style="margin: 0;">Meus Produtos</h3>
         <button class="btn btn-primary" onclick="abrirModal()">+ Novo Produto</button>
@@ -110,7 +111,7 @@
     </div>
 
     <!-- SEÇÃO ENCOMENDAS -->
-    <div id="secao-encomendas" style="display: none;">
+    <div id="secao-encomendas" class="painel-secao" style="display: none;">
       <div class="card" style="margin-top: 20px;">
         <h3 style="margin-bottom: 15px;">Gestão de Encomendas</h3>
         <div id="alertEncomendas" class="alert"></div>
@@ -119,7 +120,7 @@
     </div>
 
     <!-- SEÇÃO RELATÓRIOS -->
-    <div id="secao-relatorios" style="display: none;">
+    <div id="secao-relatorios" class="painel-secao" style="display: none;">
       <div class="kpi-grid">
         <div class="kpi-card">
           <h4>Total Faturado</h4>
@@ -148,6 +149,35 @@
         </table>
       </div>
     </div>
+
+    <!-- SEÇÃO LOCAIS DE ENTREGA -->
+    <section id="secao-pontos" class="painel-secao" style="display: none;">
+      <div class="card" style="margin-top: 20px;">
+        <h3 style="margin-bottom: 10px;">Onde Você Atende</h3>
+        <p style="color: #666; margin-bottom: 20px;">Marque os pontos da feira onde você disponibiliza seus produtos para retirada.</p>
+        <div id="alertPontos" class="alert"></div>
+        <div id="lista-pontos-checkboxes" style="margin-bottom: 20px;">
+          <!-- Renderizado dinamicamente -->
+        </div>
+        <button class="btn btn-primary" id="btnSalvarLocais" onclick="salvarLocaisAtendimento()">Salvar Locais de Atendimento</button>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <h3 style="margin-bottom: 10px;">Cadastrar Novo Ponto de Entrega</h3>
+        <div id="alertNovoPonto" class="alert"></div>
+        <form id="formNovoPonto" onsubmit="cadastrarNovoPonto(event)">
+          <div class="form-group">
+            <label for="novoPontoNome">Nome do Local</label>
+            <input type="text" id="novoPontoNome" class="form-control" required maxlength="100">
+          </div>
+          <div class="form-group">
+            <label for="novoPontoEndereco">Endereço Completo</label>
+            <input type="text" id="novoPontoEndereco" class="form-control" required maxlength="255">
+          </div>
+          <button type="submit" class="btn btn-primary" id="btnCadastrarPonto">Cadastrar e Vincular</button>
+        </form>
+      </div>
+    </section>
   </main>
 
   <div id="produtoModal" class="modal-overlay">
@@ -218,20 +248,14 @@
     }
 
     function mostrarAba(aba) {
-      document.getElementById('secao-produtos').style.display = 'none';
-      document.getElementById('secao-encomendas').style.display = 'none';
-      document.getElementById('secao-relatorios').style.display = 'none';
-      
-      document.getElementById('tab-produtos').classList.remove('active');
-      document.getElementById('tab-encomendas').classList.remove('active');
-      document.getElementById('tab-relatorios').classList.remove('active');
+      document.querySelectorAll('.painel-secao').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       
       document.getElementById('secao-' + aba).style.display = 'block';
       document.getElementById('tab-' + aba).classList.add('active');
       
-      if (aba === 'relatorios') {
-        carregarRelatorios();
-      }
+      if (aba === 'relatorios') carregarRelatorios();
+      if (aba === 'pontos') carregarGerenciadorPontos();
     }
 
     /* ---------------- PRODUTOS ---------------- */
@@ -497,6 +521,83 @@
         });
       } catch (error) {
         document.getElementById('tabelaRelatorios').innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--cor-erro);">Erro ao carregar relatórios</td></tr>`;
+      }
+    }
+
+    /* ---------------- LOCAIS DE ENTREGA (FEAT-03) ---------------- */
+    async function carregarGerenciadorPontos() {
+      const container = document.getElementById('lista-pontos-checkboxes');
+      container.innerHTML = '<p>Carregando pontos de retirada...</p>';
+      try {
+        const [todosPontos, meusPontos] = await Promise.all([
+          apiFetch('/pontos-retirada'),
+          apiFetch('/produtor/pontos-retirada')
+        ]);
+        
+        const meusPontosIds = meusPontos.map(p => p.id);
+        
+        if (todosPontos.length === 0) {
+          container.innerHTML = '<p>Nenhum ponto de retirada cadastrado no sistema.</p>';
+          return;
+        }
+
+        let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+        todosPontos.forEach(p => {
+          const checked = meusPontosIds.includes(p.id) ? 'checked' : '';
+          html += `
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+              <input type="checkbox" class="cb-ponto" value="${p.id}" ${checked}>
+              <span><strong>${escapeHTML(p.nome)}</strong> - ${escapeHTML(p.endereco)}</span>
+            </label>
+          `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = '<p class="alert alert-error">Erro ao carregar locais de entrega.</p>';
+      }
+    }
+
+    async function salvarLocaisAtendimento() {
+      const checkboxes = document.querySelectorAll('.cb-ponto:checked');
+      const ids = Array.from(checkboxes).map(cb => cb.value);
+      const btn = document.getElementById('btnSalvarLocais');
+      
+      btn.classList.add('btn-loading');
+      
+      try {
+        const res = await apiFetch('/produtor/pontos-retirada', { 
+          method: 'PUT', 
+          body: { ponto_ids: ids } 
+        });
+        showMessage(res.mensagem || 'Locais de entrega salvos com sucesso!', false, 'alertPontos');
+      } catch (err) {
+        showMessage(err.mensagem || 'Erro ao salvar locais de entrega.', true, 'alertPontos');
+      } finally {
+        btn.classList.remove('btn-loading');
+      }
+    }
+
+    async function cadastrarNovoPonto(e) {
+      e.preventDefault();
+      const nome = document.getElementById('novoPontoNome').value;
+      const endereco = document.getElementById('novoPontoEndereco').value;
+      const btn = document.getElementById('btnCadastrarPonto');
+      
+      btn.classList.add('btn-loading');
+
+      try {
+        await apiFetch('/produtor/pontos-retirada', { 
+          method: 'POST', 
+          body: { nome, endereco } 
+        });
+        showMessage('Novo local cadastrado e vinculado com sucesso!', false, 'alertNovoPonto');
+        document.getElementById('formNovoPonto').reset();
+        await carregarGerenciadorPontos();
+      } catch (err) {
+        showMessage(err.mensagem || 'Erro ao cadastrar novo ponto de entrega.', true, 'alertNovoPonto');
+      } finally {
+        btn.classList.remove('btn-loading');
       }
     }
 
