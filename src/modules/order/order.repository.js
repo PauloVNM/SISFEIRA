@@ -22,7 +22,7 @@ class OrderRepository {
 
   async buscarProdutosPorIds(ids) {
     const query = `
-      SELECT id, produtor_id, nome, preco, ativo 
+      SELECT id, produtor_id, nome, preco, unidade_medida, ativo 
       FROM produtos 
       WHERE id = ANY($1::uuid[]) AND ativo = TRUE
     `;
@@ -180,6 +180,16 @@ class OrderRepository {
     `;
     const result = await pool.query(query, [novoStatus, pedidoId]);
     return result.rows[0];
+  }
+
+  async buscarEmailsProdutoresPorIds(produtorIds) {
+    const query = `
+      SELECT id, nome, email 
+      FROM usuarios 
+      WHERE id = ANY($1::uuid[]) AND perfil = 'PRODUTOR'
+    `;
+    const result = await pool.query(query, [produtorIds]);
+    return result.rows;
   }
 }
 

@@ -2,28 +2,30 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false, // false para porta 587 (STARTTLS)
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
+    pass: process.env.SMTP_PASS
+  }
 });
 
 const enviarEmailNotificacao = async ({ destinatario, assunto, texto, html }) => {
-  if (!process.env.SMTP_HOST) {
-    console.warn('[Mailer] SMTP não configurado. Disparo ignorado com segurança.');
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn('[Mailer] Credenciais SMTP ausentes no .env. Disparo ignorado com segurança.');
     return false;
   }
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_USER || '"SISFEIRA" <no-reply@sisfeira.local>',
+      from: `"SISFEIRA" <${process.env.SMTP_USER}>`,
       to: destinatario,
       subject: assunto,
       text: texto,
-      html: html,
+      html: html
     });
+    console.log(`[Mailer] E-mail entregue ao servidor SMTP para: ${destinatario}`);
     return true;
   } catch (err) {
     console.error('[Mailer Error]:', err.message);
